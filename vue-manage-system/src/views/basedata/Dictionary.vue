@@ -78,7 +78,7 @@
       >
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column prop="name" label="字典名" width="110"></el-table-column>
-        <el-table-column prop="category" label="字典类型" sortable width="130"></el-table-column>
+        <el-table-column prop="dictionary" label="字典类型" sortable width="130"></el-table-column>
         <el-table-column prop="value" label="字典值" width="100"></el-table-column>
         <el-table-column prop="mark" label="标记" width="120"></el-table-column>
         <el-table-column prop="updated_time" label="更新时间" sortable width="180"></el-table-column>
@@ -116,8 +116,8 @@
           <el-form-item label="字典名称" :label-width="formLabelWidth">
             <el-input v-model="dictionary.name" placeholder="字典名称"></el-input>
           </el-form-item>
-          <el-form-item label="字典类型" :label-width="formLabelWidth" prop="category">
-            <el-input v-model="dictionary.category" placeholder="字典类型"></el-input>
+          <el-form-item label="字典类型" :label-width="formLabelWidth" prop="dictionary">
+            <el-input v-model="dictionary.dictionary" placeholder="字典类型"></el-input>
           </el-form-item>
 
           <el-form-item label="字典值" :label-width="formLabelWidth" prop="value">
@@ -205,7 +205,7 @@ export default {
       //添加与修改弹窗中的数值
       dictionary: {
         name: "",
-        category: "",
+        dictionary: "",
         value: "",
         status: "",
         remark: ""
@@ -213,7 +213,7 @@ export default {
       //前端校验 @blur 当元素失去焦点时触发blur事件
       rules: {
         name: [{ required: true, message: "字典名称必填", trigger: "blur" }],
-        category: [
+        dictionary: [
           { required: true, message: "字典类型必填", trigger: "blur" }
         ],
         value: [{ required: true, message: "字典值必填", trigger: "blur" }]
@@ -244,7 +244,7 @@ export default {
   },
   // 页面加载完成后加载数据
   mounted: function() {
-    this.loadCategory();
+    this.loadDictionaries();
   },
   methods: {
     // 加载数据方法
@@ -266,7 +266,7 @@ export default {
       this.$axios
         .post("/search", {
           name: this.formInline.name,
-          category: this.formInline.category,
+          dictionary: this.formInline.dictionary,
           status: this.formInline.status
         })
         .then(resp => {
@@ -278,7 +278,7 @@ export default {
               duration: 1000
             });
             // 若搜索成功则重新刷新页面
-            _this.categories = resp.data;
+            _this.Dictionaries = resp.data;
           }
         });
     },
@@ -368,7 +368,7 @@ export default {
     emptyDictionary() {
       this.dictionary = {
         name: "",
-        category: "",
+        dictionary: "",
         value: "",
         status: "",
         remark: ""
@@ -379,7 +379,7 @@ export default {
       this.dialogTitle = "编辑数据字典";
       this.dictionary = row;
       this.dictionary.name = row.name;
-      this.dictionary.category = row.category;
+      this.dictionary.dictionary = row.dictionary;
       this.dictionary.value = row.value;
       this.dictionary.status = row.status;
       this.dictionary.remark = row.remark;

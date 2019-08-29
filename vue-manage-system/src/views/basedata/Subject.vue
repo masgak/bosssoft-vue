@@ -20,10 +20,10 @@
         <el-input type="text" v-model="searchpath.name" placeholder></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="searchSubject">查询</el-button>
+        <el-button type="primary" @click="querySubject">查询</el-button>
       </el-form-item>
     </el-form>
-    <edit-form @onSubmit="loadSubject()" ref="edit"></edit-form>
+    <edit-form @onSubmit="loadSubjects()" ref="edit"></edit-form>
 
     <!-- 操作区 -->
     <div style="float:left">
@@ -33,14 +33,14 @@
               type="text"
               class="el-icon-delete"
               style="font-size: 15px"
-              @click="deleteDictionaries"
+              @click="deleteSubjects"
       >批量删除</el-button>
       <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
       <el-button
               type="text"
               class="el-icon-edit"
               style="font-size: 15px"
-              @click="showEditSubject"
+              @click="checkAndshowEditSubject"
       >修改</el-button>
       <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
       <el-button
@@ -61,6 +61,7 @@
     <!-- 记录数据的表单 -->
     <div>
       <el-table
+          ref="subjectTable"
               :data="subjects"
               style="width: 100%"
               row-style="height:20px"
@@ -102,6 +103,7 @@
                 :close-on-click-modal="false"
                 :visible.sync="dialogSubject"
                 width="50%"
+                @close='cancelEidt'
         >
           <el-form-item label="题目类别:" prop="subject_type" :label-width="formLabelWidth">
             <el-select v-model="subject.subject_type" placeholder>
@@ -215,7 +217,8 @@
 
           <span slot="footer" class="dialog-footer">
             <el-button size="mini" @click="cancelEidt">取 消</el-button>
-            <el-button size="mini" type="primary" @click="addSubect()">保 存</el-button>
+            <el-button size="mini" type="primary" @click="addSubject" :style="{ display: visibleSave }">保 存</el-button>
+            <el-button size="mini" type="primary" @click="updateSubject" :style="{ display: visibleEdit }">更 新</el-button>
           </span>
         </el-dialog>
       </el-form>
@@ -253,19 +256,24 @@
       </el-dialog>
     </div>
 
-    <el-pagination
-            style="text-align: center"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page.sync="currentPage3"
-            :page-size="100"
-            layout="prev, pager, next, jumper"
-            :total="1000"
-    ></el-pagination>
+    <!-- 分页 -->
+      <div>
+      <el-pagination
+        style="text-align: center"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page.sync="currentPage"
+        :page-size="pageSize"
+        layout="prev, pager, next, jumper"
+        :total="1000"
+      ></el-pagination>
+      </div>
+
   </div>
 </template>
 
 <script>
+import { loadSubjects,querySubject,addSubject,deleteSubjects } from "../../api/index";
   export default {
     name: "SubjectsType",
 
@@ -287,6 +295,13 @@
         },
         //在表格中显示的数据
         subjects: [
+          {
+            name: "as",
+            subject_type: "sa",
+            category: "sa",
+            update_time: "sa",
+            status: "sa"
+          },
           {
             name: "as",
             subject_type: "sa",
@@ -348,6 +363,10 @@
         //用于分页的数据
         currentPage: 1,
         pagesize: 10,
+        //默认隐藏编辑按钮
+        visibleEdit: "none",
+        //默认显示新增按钮
+        visibleSave: "",
         // 多选选中值的坐标，用于批量删除
         sels: [],
         // 搜索框数据
@@ -395,6 +414,8 @@
       showAddSubject() {
         //设置弹窗表头
         this.dialogTitle = "添加数据字典";
+        this.visibleEdit = "none",
+        this.visibleSave = "",
         this.dialogSubject = true;
       },
       //取消弹窗
@@ -415,6 +436,26 @@
         };
       },
       //显示修改数据弹窗
+      //多行检查后再修改
+     checkAndshowEditSubject() {
+      if (this.sels.length > 1) {
+        this.$message({
+          message: "不可以同时编辑多行",
+          type: "warning",
+          duration: 1000
+        });
+        return 0;
+      } else if (this.sels.length < 1) {
+        this.$message({
+          message: "请选择要编辑的行",
+          type: "warning",
+          duration: 1000
+        });
+        return 0;
+      }
+      this.showEditSubject(this.$refs.subjectTable.selection[0]);
+    },
+    //修改本行
       showEditSubject(row) {
         this.dialogTitle = "编辑题目";
         this.subject = row;
@@ -424,6 +465,9 @@
         this.subject.name = row.name;
         this.subject.status = row.status;
         this.subject.remark = row.remark;
+        //显示编辑按钮，隐藏新增按钮
+        this.visibleEdit = "",
+        this.visibleSave = "none",
         this.dialogSubject = true;
       },
       // 根据所选的id删除相应数据
@@ -457,7 +501,15 @@
                 });
       },
       //批量删除数据
-      deleteDictionaries() {
+      deleteSubjects() {
+        if (this.sels.length < 1) {
+        this.$message({
+          message: "请选择要删除的题目",
+          type: "warning",
+          duration: 1000
+        });
+        return 0;
+      }
         this.$confirm(
                 "此操作将删除[" + this.sels.length + "]条数据, 是否继续?",
                 "提示",
@@ -475,7 +527,15 @@
                   this.doDelete(ids);
                 })
                 .catch(() => {});
-      }
+      },
+      //分页方法
+    handleSizeChange(val) {
+      this.pageSize = val;
+    },
+    handleCurrentChange(val) {
+      this.currentPage = val;
+    }
+    
     }
   };
 </script>

@@ -5,8 +5,8 @@
     <div class="leftboxs">
       <span class="el-icon-notebook-1">&nbsp;题目类别</span>
       <span style="margin-left:10px">
-        <el-button type="text" class="el-icon-plus"></el-button>
-        <el-button type="text" class="el-icon-refresh" @click="refreshTree()"></el-button>
+        <el-button type="text" class="el-icon-plus" @click="showAddCategory"></el-button>
+        <el-button type="text" class="el-icon-refresh" @click="refreshTree"></el-button>
       </span>
       <el-tree :data="tree" :props="defaultProps" @node-click="handleNodeClick" v-if="showTree"></el-tree>
     </div>
@@ -18,7 +18,7 @@
           <el-input type="text" placeholder="请输入题目类别" v-model="searchpath.name"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary">查询</el-button>
+          <el-button type="primary" @click="queryCategory">查询</el-button>
         </el-form-item>
       </el-form>
 
@@ -44,7 +44,7 @@
           type="text"
           class="el-icon-edit"
           style="font-size: 15px"
-          @click="checkAndshowEditCategory()"
+          @click="checkAndshowEditCategory"
         >修改</el-button>
         <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
         <el-button
@@ -107,6 +107,7 @@
             :close-on-click-modal="false"
             :visible.sync="dialogCategory"
             width="50%"
+            @close="cancelEidt"
           >
             <el-form-item label="题目类别：" prop="name">
               <el-input v-model="category.name"></el-input>
@@ -122,7 +123,8 @@
             </el-form-item>
             <span slot="footer" class="dialog-footer">
               <el-button size="mini" @click="cancelEidt">取 消</el-button>
-              <el-button size="mini" type="primary" @click="addCategory()">保 存</el-button>
+              <el-button size="mini" type="primary" @click="addCategory" :style="{ display: visibleSave }">保 存</el-button>
+              <el-button size="mini" type="primary" @click="updateCategory" :style="{ display: visibleEdit }">更 新</el-button>
             </span>
           </el-dialog>
         </el-form>
@@ -168,20 +170,24 @@
       </div>
 
       <!-- 分页 -->
+      <div>
       <el-pagination
         style="text-align: center"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page.sync="currentPage"
-        :page-size="100"
+        :page-size="pageSize"
         layout="prev, pager, next, jumper"
         :total="1000"
       ></el-pagination>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script>
+import { loadCategories,queryCategory,addCategory,deleteCategoriesy } from "../../api/index";
 export default {
   data() {
     return {
@@ -253,21 +259,7 @@ export default {
           ]
         }
       ],
-      tableData: [
-        {
-          CategoryType: "h",
-          updated_time: "a",
-          remark: "0",
-          status: "是"
-        },
-        {
-          CategoryType: "h",
-          updated_time: "as",
-          remark: "1",
-          status: "否"
-        }
-      ],
-
+      
       categories: [
         {
           name: "test1",
@@ -360,6 +352,10 @@ export default {
       dialogCategory: false,
       dialogUpload: false,
       dialogDownload: false,
+      //默认隐藏编辑按钮
+      visibleEdit: "none",
+      //默认显示新增按钮
+      visibleSave: "",
       //添加与修改弹窗中的数值
       category: {
         name: "",
@@ -390,7 +386,7 @@ export default {
   methods: {
     //加载Category表格
     loadCategories() {
-      var _this = this;
+      let _this = this;
       this.$axios.get("/categories").then(resp => {
         if (resp && resp.status === 200) {
           _this.categories = resp.data;
@@ -402,8 +398,8 @@ export default {
       this.sels = sels;
     },
     //搜索
-    searchCategory() {
-      var _this = this;
+    queryCategory() {
+      let _this = this;
       this.$axios
         .post("/search", {
           name: this.searchpath.name
@@ -424,8 +420,11 @@ export default {
     //显示增加/修改数据弹窗
     showAddCategory() {
       this.dialogTitle = "添加题目类别";
+      this.visibleEdit = "none",
+      this.visibleSave = "",
       this.dialogCategory = true;
     },
+    //增加题目类别
     addCategory() {
       this.$axios
         .post("/add", {
@@ -451,13 +450,17 @@ export default {
           });
         });
     },
+    //修改题目类别
+    updateCategory(){
+      
+    },
     //取消弹窗
     cancelEidt() {
       this.dialogCategory = false;
-      this.emptyDictioanry();
+      this.emptyCategory();
     },
     //清除弹窗表单内容
-    emptyDictioanry() {
+    emptyCategory() {
       this.category = {
         name: "",
         status: "",
@@ -475,7 +478,7 @@ export default {
           duration: 1000
         });
         return 0;
-      }else if(this.sels.length <1){
+      } else if (this.sels.length < 1) {
         this.$message({
           message: "请选择要编辑的行",
           type: "warning",
@@ -484,7 +487,6 @@ export default {
         return 0;
       }
       this.showEditCategory(this.$refs.categorytable.selection[0]);
-
     },
     //修改本行
     showEditCategory(row) {
@@ -493,6 +495,10 @@ export default {
       this.category.name = row.name;
       this.category.status = row.status;
       this.category.remark = row.remark;
+      
+      //显示编辑按钮，隐藏新增按钮
+      this.visibleEdit = "";
+      this.visibleSave = "none";
       this.dialogCategory = true;
     },
     //根据所选的id删除相应数据
@@ -543,8 +549,8 @@ export default {
         }
       )
         .then(() => {
-          var ids = "";
-          for (var i = 0; i < this.sels.length; i++) {
+          let ids = "";
+          for (let i = 0; i < this.sels.length; i++) {
             ids += this.sels[i].id + ",";
           }
           this.doDelete(ids);
