@@ -255,6 +255,10 @@ export default {
     this.loadDictionaries();
   },
   methods: {
+    // 每一行多选选中时触发该方法
+    handleSelectionChange(sels) {
+      this.sels = sels;
+    },
     // 加载数据方法
     loadDictionaries() {
       var _this = this;
@@ -271,19 +275,12 @@ export default {
         });
       });
     },
-    // 每一行多选选中时触发该方法
-    handleSelectionChange(sels) {
-      this.sels = sels;
-    },
     // 搜索功能
     searchDictionary() {
       var _this = this;
-      queryDictionary({
-          name: this.formInline.name,
-          category: this.formInline.category,
-          status: this.formInline.status
-        })
+      queryDictionary(this.searchpath)
         .then(resp => {
+          //console.log(this.searchpath)
           if (resp) {
             this.$notify({
               title: "成功",
@@ -341,7 +338,6 @@ export default {
     },
     // 编辑数据
     updateDictionary() {
-
       console.log(this.dictionary)
       this.$axios
         updateDictionary({
