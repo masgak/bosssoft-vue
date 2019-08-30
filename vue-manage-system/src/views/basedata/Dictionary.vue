@@ -41,7 +41,7 @@
         type="text"
         class="el-icon-edit"
         style="font-size: 15px"
-        @click="showEditDictionary"
+        @click="checkAndshowEditDictionary"
       >修改</el-button>
       <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
       <el-button
@@ -75,7 +75,7 @@
     <!-- 显示数据字典的表单 -->
     <div>
       <el-table
-        ref="multipleTable"
+        ref="dictionaryTable"
         :data="dictionaries"
         tooltip-effect="dark"
         style="width: 100%"
@@ -87,7 +87,7 @@
         <el-table-column prop="category" label="字典类型" sortable width="130"></el-table-column>
         <el-table-column prop="value" label="字典值" width="100"></el-table-column>
         <el-table-column prop="mark" label="标记" width="120"></el-table-column>
-        <el-table-column prop="updated_time" label="更新时间" sortable width="180"></el-table-column>
+        <el-table-column prop="updatedTime" label="更新时间" sortable width="180"></el-table-column>
         <el-table-column prop="remark" label="备注信息" width="140"></el-table-column>
         <el-table-column prop="status" label="状态" width="100"></el-table-column>
         <el-table-column prop="operate" label="操作" width="100">
@@ -118,11 +118,12 @@
           :close-on-click-modal="false"
           :visible.sync="dialogDictionary"
           width="60%"
+          @close='cancelEidt'
         >
-          <el-form-item label="字典名称" :label-width="formLabelWidth">
+          <el-form-item label="字典名称" :label-width="formLabelWidth" prop="name">
             <el-input v-model="dictionary.name" placeholder="字典名称"></el-input>
           </el-form-item>
-          <el-form-item label="字典类型" :label-width="formLabelWidth" prop="dictionary">
+          <el-form-item label="字典类型" :label-width="formLabelWidth" prop="category">
             <el-input v-model="dictionary.category" placeholder="字典类型"></el-input>
           </el-form-item>
 
@@ -130,9 +131,9 @@
             <el-input v-model="dictionary.value" placeholder="字典值" type="int"></el-input>
           </el-form-item>
 
-          <el-form-item label="是否启用" :label-width="formLabelWidth" prop="status">
-            <el-radio v-model="dictionary.status" label="1">是</el-radio>
-            <el-radio v-model="dictionary.status" label="0">否</el-radio>
+          <el-form-item label="是否启用"  :label-width="formLabelWidth" prop="status">
+            <el-radio v-model="dictionary.status" :label=1 >是</el-radio>
+            <el-radio v-model="dictionary.status" :label=0 >否</el-radio>
           </el-form-item>
 
           <el-form-item label="备注信息" :label-width="formLabelWidth" prop="remark">
@@ -142,7 +143,7 @@
           <span slot="footer" class="dialog-footer">
             <el-button size="mini" @click="cancelEidt">取 消</el-button>
             <el-button size="mini" type="primary" @click="addDictionary()" :style="{ display: visibleSave }">保 存</el-button>
-            <el-button size="mini" type="primary" @click="updateDictionary()" :style="{ display: visibleEdit }">编 辑</el-button>
+            <el-button size="mini" type="primary" @click="updateDictionary()" :style="{ display: visibleEdit }">更 新</el-button>
           </span>
         </el-dialog>
       </el-form>
@@ -214,7 +215,7 @@ export default {
         name: "",
         category: "",
         value: "",
-        status: "",
+        status: 1,
         remark: ""
       },
       //前端校验 @blur 当元素失去焦点时触发blur事件
@@ -259,6 +260,7 @@ export default {
       var _this = this;
       loadDictionaries().then(resp => {
         if (resp) {
+          console.log(resp);
           _this.dictionaries = resp;
         }
       }).catch(() => {
@@ -276,14 +278,13 @@ export default {
     // 搜索功能
     searchDictionary() {
       var _this = this;
-      this.$axios
-        .post("/search", {
+      queryDictionary({
           name: this.formInline.name,
           category: this.formInline.category,
           status: this.formInline.status
         })
         .then(resp => {
-          if (resp && resp.status === 200) {
+          if (resp) {
             this.$notify({
               title: "成功",
               message: "查询结果如下",
@@ -299,6 +300,8 @@ export default {
     showAddDictionary() {
       //设置弹窗表头
       this.dialogTitle = "添加数据字典";
+      this.visibleEdit = "none",
+      this.visibleSave = "",
       this.dialogDictionary = true;
     },
     // 增加数据
@@ -341,7 +344,7 @@ export default {
 
       console.log(this.dictionary)
       this.$axios
-        .post("/update", {
+        updateDictionary({
             requestHead: {
               version: '1',
               businessType: '1',
@@ -353,7 +356,7 @@ export default {
         })
         .then(resp => {
           // 成功增加数据后刷新页面
-          if (resp && resp.status === 200) {
+          if (resp) {
             this.$notify({
               title: "成功",
               message: "数据已成功修改",
@@ -383,11 +386,29 @@ export default {
         name: "",
         category: "",
         value: "",
-        status: "",
+        status: 1,
         remark: ""
       };
     },
     //显示修改数据弹窗
+    checkAndshowEditDictionary(){
+      if (this.sels.length > 1) {
+        this.$message({
+          message: "不可以同时编辑多行",
+          type: "warning",
+          duration: 1000
+        });
+        return 0;
+      } else if (this.sels.length < 1) {
+        this.$message({
+          message: "请选择要编辑的行",
+          type: "warning",
+          duration: 1000
+        });
+        return 0;
+      }
+      this.showEditDictionary(this.$refs.dictionaryTable.selection[0]);
+    },
     showEditDictionary(row) {
       this.dialogTitle = "编辑数据字典";
       this.dictionary = row;

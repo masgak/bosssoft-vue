@@ -413,7 +413,7 @@ import { loadSubjects,querySubject,addSubject,deleteSubjects } from "../../api/i
       //显示添加数据弹窗
       showAddSubject() {
         //设置弹窗表头
-        this.dialogTitle = "添加数据字典";
+        this.dialogTitle = "添加题目";
         this.visibleEdit = "none",
         this.visibleSave = "",
         this.dialogSubject = true;

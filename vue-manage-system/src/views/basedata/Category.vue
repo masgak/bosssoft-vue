@@ -114,8 +114,8 @@
             </el-form-item>
             <el-form-item label="是否启用：" prop="status">
               <el-radio-group v-model="category.status">
-                <el-radio label="是"></el-radio>
-                <el-radio label="否"></el-radio>
+                <el-radio label="是">是</el-radio>
+                <el-radio label="否">否</el-radio>
               </el-radio-group>
             </el-form-item>
             <el-form-item label="备注信息：">
