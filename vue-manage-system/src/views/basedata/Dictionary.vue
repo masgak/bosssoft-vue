@@ -58,12 +58,18 @@
         @click="dialogUpload = true"
       >导入</el-button>
       <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
-      <el-button
-        type="text"
-        class="el-icon-sort-up"
-        style="font-size: 15px"
-        @click="dialogDownload = true"
-      >导出</el-button>
+<!--      <el-button-->
+<!--        type="text"-->
+<!--        class="el-icon-sort-up"-->
+<!--        style="font-size: 15px"-->
+<!--        @click="dialogDownload = true"-->
+<!--      >导出</el-button>-->
+        <el-button
+                type="text"
+                class="el-icon-sort-up"
+                style="font-size: 15px"
+                @click="exportExcel"
+        >导出</el-button>
     </div>
 
     <!-- 显示数据字典的表单 -->
@@ -471,6 +477,9 @@ export default {
             duration: 1000
           })
         })
+    },
+    exportExcel (){
+        window.location.href = 'http://localhost:10001/api/execel'
     }
   }
 };
