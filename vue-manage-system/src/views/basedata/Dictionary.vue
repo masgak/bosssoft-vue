@@ -7,7 +7,7 @@
         <el-input type="text" v-model="searchpath.name" placeholder="字典名称"></el-input>
       </el-form-item>
       <el-form-item label="字典类型">
-        <el-input type="text" v-model="searchpath.type" placeholder="字典类型"></el-input>
+        <el-input type="text" v-model="searchpath.category" placeholder="字典类型"></el-input>
       </el-form-item>
       <el-form-item label="启用标记">
         <el-input type="text" v-model="searchpath.status" placeholder="启用标记"></el-input>
@@ -78,7 +78,7 @@
       >
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column prop="name" label="字典名" width="110"></el-table-column>
-        <el-table-column prop="dictionary" label="字典类型" sortable width="130"></el-table-column>
+        <el-table-column prop="category" label="字典类型" sortable width="130"></el-table-column>
         <el-table-column prop="value" label="字典值" width="100"></el-table-column>
         <el-table-column prop="mark" label="标记" width="120"></el-table-column>
         <el-table-column prop="updated_time" label="更新时间" sortable width="180"></el-table-column>
@@ -117,7 +117,7 @@
             <el-input v-model="dictionary.name" placeholder="字典名称"></el-input>
           </el-form-item>
           <el-form-item label="字典类型" :label-width="formLabelWidth" prop="dictionary">
-            <el-input v-model="dictionary.dictionary" placeholder="字典类型"></el-input>
+            <el-input v-model="dictionary.category" placeholder="字典类型"></el-input>
           </el-form-item>
 
           <el-form-item label="字典值" :label-width="formLabelWidth" prop="value">
@@ -187,6 +187,7 @@
   </div>
 </template>
 <script>
+import { loadDictionaries,addDictionary,updateDictionary,deleteDictionaries,queryDictionary } from '../../api';
 export default {
   data() {
     return {
@@ -205,7 +206,7 @@ export default {
       //添加与修改弹窗中的数值
       dictionary: {
         name: "",
-        dictionary: "",
+        category: "",
         value: "",
         status: "",
         remark: ""
@@ -213,7 +214,7 @@ export default {
       //前端校验 @blur 当元素失去焦点时触发blur事件
       rules: {
         name: [{ required: true, message: "字典名称必填", trigger: "blur" }],
-        dictionary: [
+        category: [
           { required: true, message: "字典类型必填", trigger: "blur" }
         ],
         value: [{ required: true, message: "字典值必填", trigger: "blur" }]
@@ -231,7 +232,7 @@ export default {
       // 搜索框数据
       searchpath: {
         name: "",
-        type: "",
+        category: "",
         status: ""
       },
       formLabelWidth: "120px"
@@ -250,10 +251,16 @@ export default {
     // 加载数据方法
     loadDictionaries() {
       var _this = this;
-      this.$axios.get("/dictionaries").then(resp => {
-        if (resp && resp.status === 200) {
-          _this.dictionaries = resp.data;
+      loadDictionaries().then(resp => {
+        if (resp) {
+          _this.dictionaries = resp;
         }
+      }).catch(() => {
+          this.$message({
+            type: "error",
+            message: "数据载入失败",
+            duration: 1000
+        });
       });
     },
     // 每一行多选选中时触发该方法
@@ -266,7 +273,7 @@ export default {
       this.$axios
         .post("/search", {
           name: this.formInline.name,
-          dictionary: this.formInline.dictionary,
+          category: this.formInline.category,
           status: this.formInline.status
         })
         .then(resp => {
@@ -292,7 +299,7 @@ export default {
     addDictionary() {
       console.log(this.dictionary)
       this.$axios
-        .post("/add", {
+        addDictionary( {
             requestHead: {
               version: '1',
               businessType: '1',
@@ -304,7 +311,7 @@ export default {
         })
         .then(resp => {
           // 成功增加数据后刷新页面
-          if (resp && resp.status === 200) {
+          if (resp) {
             this.$notify({
               title: "成功",
               message: "数据已成功插入",
@@ -368,7 +375,7 @@ export default {
     emptyDictionary() {
       this.dictionary = {
         name: "",
-        dictionary: "",
+        category: "",
         value: "",
         status: "",
         remark: ""
@@ -379,7 +386,7 @@ export default {
       this.dialogTitle = "编辑数据字典";
       this.dictionary = row;
       this.dictionary.name = row.name;
-      this.dictionary.dictionary = row.dictionary;
+      this.dictionary.category = row.category;
       this.dictionary.value = row.value;
       this.dictionary.status = row.status;
       this.dictionary.remark = row.remark;

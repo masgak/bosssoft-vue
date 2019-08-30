@@ -1,5 +1,5 @@
 import request from '../utils/request';
-
+import { post, put, deletes, get } from '../utils/request'
 export const fetchData = (query) => {
     return request({
         url: '/ms/table/list',
@@ -12,44 +12,44 @@ export const fetchData = (query) => {
 /*api接口统一管理 */
 
 //---------------------数据字典api------------------------//
-export const loadDictionaries=p=>get('/dictionary',p);
-export const queryDictionary=p=>get('/dictionary',p);
-export const addDictionary=p=>post('/dictionary',p);
-export const deleteDictionaries=p=>deletes('/dictionary',p);
-export const updateDictionary=p=>put('/dictionary',p);
+export const loadDictionaries=p=>get('/loadDictionaries',p);
+export const queryDictionary=p=>post('/queryDictionary',p);
+export const addDictionary=p=>post('/addDictionary',p);
+export const deleteDictionaries=p=>post('/deleteDictionaries',p);
+export const updateDictionary=p=>post('/updateDictionary',p);
 
 
 //---------------------题目类别api-----------------------//
 
 export const loadCategories=p=>get('/category',p);
 export const addCategory=p=>post('/category',p);
-export const deleteCategories=p=>deletes('/category',p);
-export const updateCategory=p=>put('/category',p);
-export const queryCategory=p=>get('/category',p);
+export const deleteCategories=p=>post('/category',p);
+export const updateCategory=p=>post('/category',p);
+export const queryCategory=p=>post('/category',p);
 
 //----------------------题型api------------------------//
 
-export const loadSubjectTypes=p=>('/subjectType',p);
-export const addSubjectType=p=>('/subjectType',p);
-export const deleteSubjectTypes=p=>('/subjectType',p);
-export const updateSubjectType=p=>('/subjectType',p);
-export const querySubjectType=p=>('/subjectType',p);
+export const loadSubjectTypes=p=>get('/subjectType',p);
+export const addSubjectType=p=>post('/subjectType',p);
+export const deleteSubjectTypes=p=>post('/subjectType',p);
+export const updateSubjectType=p=>post('/subjectType',p);
+export const querySubjectType=p=>post('/subjectType',p);
 
 //---------------------题目api-----------------------//
 
-export const loadSubjects=p=>('/subject',p);
-export const addSubject=p=>('/subject',p);
-export const deleteSubjects=p=>('/subject',p);
-export const updateSubject=p=>('/subject',p);
-export const querySubject=p=>('/subject',p);
+export const loadSubjects=p=>get('/subject',p);
+export const addSubject=p=>post('/subject',p);
+export const deleteSubjects=p=>post('/subject',p);
+export const updateSubject=p=>post('/subject',p);
+export const querySubject=p=>post('/subject',p);
 
 //---------------------组卷配置api-----------------------//
 
-export const loadCombExams=p=>('/combExam',p);
-export const addCombExam=p=>('/combExam',p);
-export const deleteCombExams=p=>('/combExam',p);
-export const updateCombExam=p=>('/combExam',p);
-export const queryCombExam=p=>('/combExam',p);
+export const loadCombExams=p=>get('/combExam',p);
+export const addCombExam=p=>post('/combExam',p);
+export const deleteCombExams=p=>post('/combExam',p);
+export const updateCombExam=p=>post('/combExam',p);
+export const queryCombExam=p=>post('/combExam',p);
 
 
 
