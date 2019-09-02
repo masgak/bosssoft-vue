@@ -38,6 +38,13 @@
       <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
       <el-button
         type="text"
+        class="el-icon-edit"
+        style="font-size: 15px"
+        @click="loadSubjectTypes"
+      >刷新</el-button>
+      <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
+      <el-button
+        type="text"
         class="el-icon-sort-down"
         style="font-size: 15px"
         @click="dialogUpload = true"
@@ -62,13 +69,13 @@
         cell-style="padding:0"
         :row-class-name="tableRowClassName"
         @selection-change="handleSelectionChange"
-        :default-sort="{prop: 'updated_time', order: 'descending'}"
+        :default-sort="{prop: 'updatedTime', order: 'descending'}"
       >
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column prop="name" label="题目类型" sortable width="200"></el-table-column>
         <el-table-column prop="remark" label="备注信息" width="230"></el-table-column>
-        <el-table-column prop="updated_time" label="更新时间" sortable width="140"></el-table-column>
-        <el-table-column prop="status" label="是否启用" sortable width="140"></el-table-column>
+        <el-table-column prop="updatedTime" label="更新时间" sortable width="140"></el-table-column>
+        <el-table-column prop="status" label="启用标记" sortable width="140"></el-table-column>
         <el-table-column prop="operate" label="操作">
           <template slot-scope="scope">
             <el-button type="text" class="el-icon-plus" @click="showAddSubjectType"></el-button>
@@ -103,8 +110,8 @@
           </el-form-item>
           <el-form-item label="是否启用：" prop="status">
             <el-radio-group v-model="subjectType.status">
-              <el-radio label="是"></el-radio>
-              <el-radio label="否"></el-radio>
+              <el-radio :label=1>是</el-radio>
+              <el-radio :label=0>否</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="备注信息：">
@@ -148,10 +155,10 @@
         :before-close="handleClose"
         center
       >
-        <el-input style="width: 200px;"></el-input>
+        <el-input style="width: 200px;" v-model="filename"></el-input>
         <label>.xls</label>
         <div slot="footer" class="dialog-footer">
-          <el-button size="small" round>保存</el-button>
+          <el-button size="small" round @click="exportExcel">保存</el-button>
           <el-button size="small" round type="primary" @click="dialogDownload = false">取消</el-button>
         </div>
         <div slot="tip">只能导出excel文件，且需符合相应格式</div>
@@ -174,24 +181,12 @@
 </template>
 
 <script>
-import { loadSubjectTypes,querySubjectType,addSubjectType,deleteSubjectTypes } from "../../api/index";
+import { loadSubjectTypes,querySubjectType,addSubjectType,deleteSubjectTypes,updateSubjectType } from "../../api/index";
 export default {
   data() {
     return {
-      subjectTypes: [
-        {
-          name: "Characters",
-          status: "是",
-          remark: "0",
-          updated_time: "2019-06-21"
-        },
-        {
-          name: "sad",
-          remark: "1",
-          updated_time: "2019-10-05",
-          status: "否"
-        }
-      ],
+      filename:"题型",
+      subjectTypes: [],
       //弹窗显示与否
       dialogSubjectType: false,
       dialogUpload: false,
@@ -203,7 +198,7 @@ export default {
       //添加与修改弹窗中的数值
       subjectType: {
         name: "",
-        status: "是",
+        status: 1,
         remark: ""
       },
 
@@ -225,13 +220,17 @@ export default {
       }
     };
   },
+  // 页面加载完成后加载数据
+  mounted: function() {
+    this.loadSubjectTypes();
+  },
   methods: {
     //加载SubjectType表格
     loadSubjectTypes() {
       var _this = this;
-      this.$axios.get("/subjectTypes").then(resp => {
-        if (resp && resp.status === 200) {
-          _this.subjectTypes = resp.data;
+      loadSubjectTypes().then(resp => {
+        if (resp) {
+          _this.subjectTypes = resp;
         }
       });
     },
@@ -266,12 +265,17 @@ export default {
       this.visibleSave = "",
       this.dialogSubjectType = true;
     },
+    //增加题型
     addSubjectType() {
-      this.$axios
-        .post("/add", {
-          name: this.subjectType.name,
-          status: this.subjectType.status,
-          remark: this.subjectTypes.remark
+      addSubjectType({
+          requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: this.subjectType
         })
         .then(resp => {
           this.$notify({
@@ -291,6 +295,38 @@ export default {
           });
         });
     },
+    
+    //修改题型
+       updateSubjectType() {
+      updateSubjectType({
+          requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: this.subjectType
+        })
+        .then(resp => {
+          this.$notify({
+            title: "成功",
+            message: "数据已成功更新",
+            type: "success",
+            duration: 1500
+          });
+          this.loadSubjectTypes();
+          this.dialogSubjectType = false;
+        })
+        .catch(() => {
+          this.$message({
+            type: "error",
+            message: "修改数据失败",
+            duration: 1000
+          });
+        });
+    },
+
     //取消弹窗
     cancelEidt() {
       this.dialogSubjectType = false;
@@ -300,7 +336,7 @@ export default {
     emptySubjectType() {
       this.subjectType = {
         name: "",
-        status: "",
+        status: 1,
         remark: ""
       };
     },
@@ -392,6 +428,15 @@ export default {
           this.doDelete(ids);
         })
         .catch(() => {});
+    },
+    //导出为excel文件
+    exportExcel (){
+        this.$axios.post("/setSubjectTypeFilename", this.filename)
+        .then(resp => {
+          if (resp && resp.status === 200) {
+            window.location.href = 'http://localhost:10001/api/SubjectType'
+          }
+        });
     },
     //分页方法
     handleSizeChange(val) {

@@ -58,18 +58,19 @@
         @click="dialogUpload = true"
       >导入</el-button>
       <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
-<!--      <el-button-->
-<!--        type="text"-->
-<!--        class="el-icon-sort-up"-->
-<!--        style="font-size: 15px"-->
-<!--        @click="dialogDownload = true"-->
-<!--      >导出</el-button>-->
-        <el-button
+     <el-button
+       type="text"
+       class="el-icon-sort-up"
+       style="font-size: 15px"
+       @click="dialogDownload = true"
+     >导出</el-button>
+
+        <!-- <el-button
                 type="text"
                 class="el-icon-sort-up"
                 style="font-size: 15px"
                 @click="exportExcel"
-        >导出</el-button>
+        >导出</el-button> -->
     </div>
 
     <!-- 显示数据字典的表单 -->
@@ -172,9 +173,9 @@
     <!-- 添加导出文件对话框 -->
     <div>
       <el-dialog title="导出" :visible.sync="dialogDownload" width="20%" :before-close="handleClose">
-        <el-input style="width: 200px;"></el-input>
+        <el-input v-model="filename" style="width: 200px;"></el-input>
         <label>.xls</label>
-        <el-button size="small" round>保存</el-button>
+        <el-button size="small" round @click="exportExcel">保存</el-button>
         <el-button size="small" round type="danger" @click="dialogDownload=false">取消</el-button>
         <div slot="tip">只能导出excel文件，且需符合相应格式</div>
       </el-dialog>
@@ -197,6 +198,7 @@ import { loadDictionaries,addDictionary,updateDictionary,deleteDictionaries,quer
 export default {
   data() {
     return {
+      filename:"数据字典",
       //在表格中显示的数据
       dictionaries: [],
       //添加与修改弹窗显示与否
@@ -523,7 +525,12 @@ export default {
         })
     },
     exportExcel (){
-        window.location.href = 'http://localhost:10001/api/execel'
+        this.$axios.post("/setFilename", this.filename)
+        .then(resp => {
+          if (resp && resp.status === 200) {
+            window.location.href = 'http://localhost:10001/api/execel'
+          }
+        });
     }
   }
 };
