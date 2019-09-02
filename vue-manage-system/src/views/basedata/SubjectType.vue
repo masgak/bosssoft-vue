@@ -155,10 +155,10 @@
         :before-close="handleClose"
         center
       >
-        <el-input style="width: 200px;"></el-input>
+        <el-input style="width: 200px;" v-model="filename"></el-input>
         <label>.xls</label>
         <div slot="footer" class="dialog-footer">
-          <el-button size="small" round>保存</el-button>
+          <el-button size="small" round @click="exportExcel">保存</el-button>
           <el-button size="small" round type="primary" @click="dialogDownload = false">取消</el-button>
         </div>
         <div slot="tip">只能导出excel文件，且需符合相应格式</div>
@@ -185,6 +185,7 @@ import { loadSubjectTypes,querySubjectType,addSubjectType,deleteSubjectTypes,upd
 export default {
   data() {
     return {
+      filename:"题型",
       subjectTypes: [],
       //弹窗显示与否
       dialogSubjectType: false,
@@ -427,6 +428,15 @@ export default {
           this.doDelete(ids);
         })
         .catch(() => {});
+    },
+    //导出为excel文件
+    exportExcel (){
+        this.$axios.post("/setSubjectTypeFilename", this.filename)
+        .then(resp => {
+          if (resp && resp.status === 200) {
+            window.location.href = 'http://localhost:10001/api/SubjectType'
+          }
+        });
     },
     //分页方法
     handleSizeChange(val) {

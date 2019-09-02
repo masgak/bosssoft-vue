@@ -173,7 +173,7 @@
     <!-- 添加导出文件对话框 -->
     <div>
       <el-dialog title="导出" :visible.sync="dialogDownload" width="20%" :before-close="handleClose">
-        <el-input style="width: 200px;" v-model="filename"></el-input>
+        <el-input v-model="filename" style="width: 200px;"></el-input>
         <label>.xls</label>
         <el-button size="small" round @click="exportExcel">保存</el-button>
         <el-button size="small" round type="danger" @click="dialogDownload=false">取消</el-button>
@@ -198,8 +198,7 @@ import { loadDictionaries,addDictionary,updateDictionary,deleteDictionaries,quer
 export default {
   data() {
     return {
-      //导出文件名
-      filename:"",
+      filename:"数据字典",
       //在表格中显示的数据
       dictionaries: [],
       //添加与修改弹窗显示与否
@@ -257,10 +256,6 @@ export default {
     this.loadDictionaries();
   },
   methods: {
-    // 每一行多选选中时触发该方法
-    handleSelectionChange(sels) {
-      this.sels = sels;
-    },
     // 加载数据方法
     loadDictionaries() {
       var _this = this;
@@ -277,11 +272,14 @@ export default {
         });
       });
     },
+    // 每一行多选选中时触发该方法
+    handleSelectionChange(sels) {
+      this.sels = sels;
+    },
     // 搜索功能
     searchDictionary() {
       console.log(this.searchpath)
       var _this = this;
-
       queryDictionary({
         requestHead: {
           version: '1',
@@ -293,7 +291,6 @@ export default {
         body: this.searchpath
       })
         .then(resp => {
-          //console.log(this.searchpath)
           if (resp) {
             this.$notify({
               title: "成功",
@@ -316,7 +313,8 @@ export default {
     },
     // 增加数据
     addDictionary() {
-      console.log(this.dictionary);
+      console.log(this.dictionary)
+      this.$axios
         addDictionary( {
             requestHead: {
               version: '1',
@@ -519,7 +517,12 @@ export default {
         })
     },
     exportExcel (){
-        window.location.href = 'http://localhost:10001/api/execel'
+        this.$axios.post("/setFilename", this.filename)
+        .then(resp => {
+          if (resp && resp.status === 200) {
+            window.location.href = 'http://localhost:10001/api/execel'
+          }
+        });
     }
   }
 };
