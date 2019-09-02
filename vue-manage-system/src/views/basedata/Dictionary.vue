@@ -394,6 +394,14 @@ export default {
         remark: ""
       };
     },
+    //状态值的转化
+    statusFormat(row, column) {
+      if (row.status === 0) {
+        return "否";
+      } else if (row.status === 1) {
+        return "是";
+      }
+    },
     //显示修改数据弹窗
     checkAndshowEditDictionary(){
       if (this.sels.length > 1) {

@@ -37,7 +37,7 @@ export const querySubjectType=p=>post('/subjectType',p);
 
 //---------------------题目api-----------------------//
 
-export const loadSubjects=p=>get('/subject',p);
+export const loadSubjects=p=>get('/loadSubjects',p);
 export const addSubject=p=>post('/subject',p);
 export const deleteSubjects=p=>post('/subject',p);
 export const updateSubject=p=>post('/subject',p);
