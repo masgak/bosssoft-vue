@@ -29,11 +29,11 @@ export const queryCategory=p=>post('/category',p);
 
 //----------------------题型api------------------------//
 
-export const loadSubjectTypes=p=>get('/subjectType',p);
-export const addSubjectType=p=>post('/subjectType',p);
-export const deleteSubjectTypes=p=>post('/subjectType',p);
-export const updateSubjectType=p=>post('/subjectType',p);
-export const querySubjectType=p=>post('/subjectType',p);
+export const loadSubjectTypes=p=>get('/loadSubjectTypes',p);
+export const addSubjectType=p=>post('/addSubjectType',p);
+export const deleteSubjectTypes=p=>post('/deleteSubjectTypes',p);
+export const updateSubjectType=p=>post('/updateSubjectType',p);
+export const querySubjectType=p=>post('/querySubjectType',p);
 
 //---------------------题目api-----------------------//
 

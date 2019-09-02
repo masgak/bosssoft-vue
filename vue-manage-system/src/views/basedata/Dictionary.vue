@@ -58,18 +58,19 @@
         @click="dialogUpload = true"
       >导入</el-button>
       <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
-<!--      <el-button-->
-<!--        type="text"-->
-<!--        class="el-icon-sort-up"-->
-<!--        style="font-size: 15px"-->
-<!--        @click="dialogDownload = true"-->
-<!--      >导出</el-button>-->
-        <el-button
+     <el-button
+       type="text"
+       class="el-icon-sort-up"
+       style="font-size: 15px"
+       @click="dialogDownload = true"
+     >导出</el-button>
+
+        <!-- <el-button
                 type="text"
                 class="el-icon-sort-up"
                 style="font-size: 15px"
                 @click="exportExcel"
-        >导出</el-button>
+        >导出</el-button> -->
     </div>
 
     <!-- 显示数据字典的表单 -->
@@ -83,18 +84,17 @@
         :default-sort="{prop: 'date', order: 'descending'} "
       >
         <el-table-column type="selection" width="55"></el-table-column>
-        <el-table-column prop="name" label="字典名" width="110"></el-table-column>
-        <el-table-column prop="category" label="字典类型" sortable width="130"></el-table-column>
-        <el-table-column prop="value" label="字典值" width="100"></el-table-column>
-        <el-table-column prop="mark" label="标记" width="120"></el-table-column>
-        <el-table-column prop="updatedTime" label="更新时间" sortable width="180"></el-table-column>
-        <el-table-column prop="remark" label="备注信息" width="140"></el-table-column>
+        <el-table-column prop="name" label="字典名" width="130"></el-table-column>
+        <el-table-column prop="category" label="字典类型" sortable width="160"></el-table-column>
+        <el-table-column prop="value" label="字典值" width="130"></el-table-column>
+        <el-table-column prop="updatedTime" label="更新时间" sortable width="220"></el-table-column>
+        <el-table-column prop="remark" label="备注信息" width="180"></el-table-column>
         <el-table-column prop="status" label="状态" width="100"></el-table-column>
-        <el-table-column prop="operate" label="操作" width="100">
+        <el-table-column prop="operate" label="操作" width="130">
           <template slot-scope="scope">
             <el-button type="text" class="el-icon-plus" @click="showAddDictionary"></el-button>
             <!-- 编辑同样调用增加页面弹窗，scope.row为这一行的数据 -->
-            <el-button type="text" class="el-icon-delete" @click="deleteDictionary(scope.row.id)"></el-button>
+            <el-button type="text" class="el-icon-delete" @click="deleteDictionary(scope.row)"></el-button>
             <el-button type="text" class="el-icon-edit" @click="showEditDictionary(scope.row)"></el-button>
           </template>
         </el-table-column>
@@ -173,9 +173,9 @@
     <!-- 添加导出文件对话框 -->
     <div>
       <el-dialog title="导出" :visible.sync="dialogDownload" width="20%" :before-close="handleClose">
-        <el-input style="width: 200px;"></el-input>
+        <el-input style="width: 200px;" v-model="filename"></el-input>
         <label>.xls</label>
-        <el-button size="small" round>保存</el-button>
+        <el-button size="small" round @click="exportExcel">保存</el-button>
         <el-button size="small" round type="danger" @click="dialogDownload=false">取消</el-button>
         <div slot="tip">只能导出excel文件，且需符合相应格式</div>
       </el-dialog>
@@ -198,6 +198,8 @@ import { loadDictionaries,addDictionary,updateDictionary,deleteDictionaries,quer
 export default {
   data() {
     return {
+      //导出文件名
+      filename:"",
       //在表格中显示的数据
       dictionaries: [],
       //添加与修改弹窗显示与否
@@ -277,8 +279,19 @@ export default {
     },
     // 搜索功能
     searchDictionary() {
+      console.log(this.searchpath)
       var _this = this;
-      queryDictionary(this.searchpath)
+
+      queryDictionary({
+        requestHead: {
+          version: '1',
+          businessType: '1',
+          deviceId: '1',
+          deviceType: '1',
+          encryption: '1'
+        },
+        body: this.searchpath
+      })
         .then(resp => {
           //console.log(this.searchpath)
           if (resp) {
@@ -303,8 +316,7 @@ export default {
     },
     // 增加数据
     addDictionary() {
-      console.log(this.dictionary)
-      this.$axios
+      console.log(this.dictionary);
         addDictionary( {
             requestHead: {
               version: '1',
@@ -419,15 +431,26 @@ export default {
       this.dialogDictionary = true;
     },
     // 根据所选的id删除相应数据
-    deleteDictionary(id) {
+    deleteDictionary(row) {
       this.$confirm("确认要删除该字典信息吗?", "信息", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
       })
         .then(() => {
-          // console.log(this.$refs.multipleTable.selection)
-          this.$axios.post("/delete", id).then(resp => {
+          this.$axios.post('/delete', {
+            requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: [{
+              id: row.id,
+              version: row.version
+            }]
+          }).then(resp => {
             if (resp && resp.status === 200) {
               this.$notify({
                 title: "成功",
