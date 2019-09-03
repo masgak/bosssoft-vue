@@ -46,6 +46,12 @@
           style="font-size: 15px"
           @click="checkAndshowEditCategory"
         >修改</el-button>
+        <el-button
+          type="text"
+          class="el-icon-edit"
+          style="font-size: 15px"
+          @click="loadCategories"
+      >刷新</el-button>
         <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
         <el-button
           type="text"
@@ -73,17 +79,17 @@
           cell-style="padding:0"
           :row-class-name="tableRowClassName"
           @selection-change="handleSelectionChange"
-          :default-sort="{prop: 'updated_time', order: 'descending'}"
+          :default-sort="{prop: 'updatedTime', order: 'descending'}"
         >
           <el-table-column type="selection" width="55"></el-table-column>
           <el-table-column prop="name" label="题目类别" sortable width="200"></el-table-column>
           <el-table-column prop="remark" label="备注信息" width="230"></el-table-column>
-          <el-table-column prop="updated_time" label="更新时间" sortable width="140"></el-table-column>
-          <el-table-column prop="status" label="是否启用" sortable width="140"></el-table-column>
+          <el-table-column prop="updatedTime" label="更新时间" sortable width="140"></el-table-column>
+          <el-table-column prop="status" label="启用标记" sortable width="140"></el-table-column>
           <el-table-column prop="operate" label="操作">
             <template slot-scope="scope">
               <el-button type="text" class="el-icon-plus" @click="showAddCategory"></el-button>
-              <el-button type="text" class="el-icon-delete" @click="deleteCategory(scope.row.id)"></el-button>
+              <el-button type="text" class="el-icon-delete" @click="deleteCategory(scope.row)"></el-button>
               <el-button type="text" class="el-icon-edit" @click="showEditCategory(scope.row)"></el-button>
             </template>
           </el-table-column>
@@ -114,8 +120,8 @@
             </el-form-item>
             <el-form-item label="是否启用：" prop="status">
               <el-radio-group v-model="category.status">
-                <el-radio label="是">是</el-radio>
-                <el-radio label="否">否</el-radio>
+                <el-radio :label=1 >是</el-radio>
+                <el-radio :label=0 >否</el-radio>
               </el-radio-group>
             </el-form-item>
             <el-form-item label="备注信息：">
@@ -187,7 +193,7 @@
 </template>
 
 <script>
-import { loadCategories,queryCategory,addCategory,deleteCategoriesy } from "../../api/index";
+import { loadCategories,queryCategory,addCategory,deleteCategories, updateCategory } from "../../api/index";
 export default {
   data() {
     return {
@@ -259,95 +265,7 @@ export default {
           ]
         }
       ],
-      
-      categories: [
-        {
-          name: "test1",
-          remark: "备注",
-          updated_time: "2019-6-21",
-          status: "是"
-        },
-        {
-          name: "test2",
-          remark: "备注",
-          updated_time: "2019-6-28",
-          status: "否"
-        },
-        {
-          name: "test3",
-          remark: "备注",
-          updated_time: "2019-6-21",
-          status: "是"
-        },
-        {
-          name: "test4",
-          remark: "备注",
-          updated_time: "2019-6-28",
-          status: "否"
-        },
-        {
-          name: "test5",
-          remark: "备注",
-          updated_time: "2019-6-21",
-          status: "是"
-        },
-        {
-          name: "test6",
-          remark: "备注",
-          updated_time: "2019-6-28",
-          status: "否"
-        },
-        {
-          name: "test7",
-          remark: "备注",
-          updated_time: "2019-6-21",
-          status: "是"
-        },
-        {
-          name: "test8",
-          remark: "备注",
-          updated_time: "2019-6-28",
-          status: "否"
-        },
-
-        {
-          name: "test9",
-          remark: "备注",
-          updated_time: "2019-6-21",
-          status: "是"
-        },
-        {
-          name: "test0",
-          remark: "备注",
-          updated_time: "2019-6-28",
-          status: "否"
-        },
-
-        {
-          name: "test11",
-          remark: "备注",
-          updated_time: "2019-6-21",
-          status: "是"
-        },
-        {
-          name: "test12",
-          remark: "备注",
-          updated_time: "2019-6-28",
-          status: "否"
-        },
-        {
-          name: "test13",
-          remark: "备注",
-          updated_time: "2019-6-21",
-          status: "是"
-        },
-        {
-          name: "test14",
-          remark: "备注",
-          updated_time: "2019-6-28",
-          status: "否"
-        }
-      ],
+      categories: [],
       //弹窗显示与否
       dialogCategory: false,
       dialogUpload: false,
@@ -359,7 +277,7 @@ export default {
       //添加与修改弹窗中的数值
       category: {
         name: "",
-        status: "是",
+        status: 1,
         remark: ""
       },
 
@@ -383,13 +301,18 @@ export default {
       }
     };
   },
+  // 页面加载完成后加载数据
+  mounted: function() {
+    this.loadCategories();
+  },
   methods: {
     //加载Category表格
     loadCategories() {
       let _this = this;
-      this.$axios.get("/categories").then(resp => {
-        if (resp && resp.status === 200) {
-          _this.categories = resp.data;
+      loadCategories().then(resp => {
+        if (resp) {
+          console.log(resp);
+          _this.categories = resp;
         }
       });
     },
@@ -426,11 +349,15 @@ export default {
     },
     //增加题目类别
     addCategory() {
-      this.$axios
-        .post("/add", {
-          name: this.category.name,
-          status: this.category.status,
-          remark: this.categories.remark
+      addCategory({
+          requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: this.category
         })
         .then(resp => {
           this.$notify({
@@ -452,7 +379,33 @@ export default {
     },
     //修改题目类别
     updateCategory(){
-      
+      updateCategory({
+          requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: this.category
+        })
+        .then(resp => {
+          this.$notify({
+            title: "成功",
+            message: "数据已成功更新",
+            type: "success",
+            duration: 1500
+          });
+          this.loadCategories();
+          this.dialogCategory = false;
+        })
+        .catch(() => {
+          this.$message({
+            type: "error",
+            message: "修改数据失败",
+            duration: 1000
+          });
+        });
     },
     //取消弹窗
     cancelEidt() {
@@ -463,7 +416,7 @@ export default {
     emptyCategory() {
       this.category = {
         name: "",
-        status: "",
+        status: 1,
         remark: ""
       };
     },
@@ -501,22 +454,36 @@ export default {
       this.visibleSave = "none";
       this.dialogCategory = true;
     },
-    //根据所选的id删除相应数据
-    deleteCategory(id) {
+
+ // 根据所选的id删除相应数据
+    deleteCategory(row) {
       this.$confirm("确认要删除该题目类别吗?", "信息", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
       })
         .then(() => {
-          this.$axios.post("/delete", id).then(resp => {
-            if (resp && resp.status === 200) {
+          deleteCategories({
+            requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: [{
+              id: row.id,
+              version: row.version
+            }]
+          }).then(resp => {
+            if (resp) {
               this.$notify({
                 title: "成功",
                 message: "数据已成功删除",
                 type: "success",
                 duration: 1000
               });
+              // 若删除成功则重新刷新页面
               this.loadCategories();
             }
           });
@@ -529,18 +496,10 @@ export default {
           });
         });
     },
-    //批量删除数据
-    deleteCategories() {
-      if (this.sels.length < 1) {
-        this.$message({
-          message: "请选择要删除的题目类别",
-          type: "warning",
-          duration: 1000
-        });
-        return 0;
-      }
-      this.$confirm(
-        "此操作将删除[" + this.sels.length + "]条数据，是否继续？",
+    // 批量删除数据
+    deleteCategories () {
+        this.$confirm(
+        "此操作将删除[" + this.sels.length + "]条数据, 是否继续?",
         "提示",
         {
           confirmButtonText: "确定",
@@ -549,14 +508,40 @@ export default {
         }
       )
         .then(() => {
-          let ids = "";
-          for (let i = 0; i < this.sels.length; i++) {
-            ids += this.sels[i].id + ",";
-          }
-          this.doDelete(ids);
+           console.log(this.sels)
+          deleteCategories( {
+            requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: this.sels
+          }).then(resp => {
+            console.log(resp)
+            if (resp) {
+              var _this = this
+              this.$notify({
+                title: '成功',
+                message: '数据已成功删除',
+                type: 'success',
+                duration: 1000
+              })
+              // 若删除成功则重新刷新页面
+              this.loadCategories()
+            }
+          })
         })
-        .catch(() => {});
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除',
+            duration: 1000
+          })
+        })
     },
+
     //分页方法
     handleSizeChange(val) {
       this.pageSize = val;

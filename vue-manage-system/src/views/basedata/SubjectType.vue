@@ -79,7 +79,7 @@
         <el-table-column prop="operate" label="操作">
           <template slot-scope="scope">
             <el-button type="text" class="el-icon-plus" @click="showAddSubjectType"></el-button>
-            <el-button type="text" class="el-icon-delete" @click="deleteSubjectType(scope.row.id)"></el-button>
+            <el-button type="text" class="el-icon-delete" @click="deleteSubjectType(scope.row)"></el-button>
             <el-button type="text" class="el-icon-edit" @click="showEditSubjectType(scope.row)"></el-button>
           </template>
         </el-table-column>
@@ -373,22 +373,36 @@ export default {
       this.visibleSave = "none",
       this.dialogSubjectType = true;
     },
-    //根据所选的id删除相应数据
-    deleteSubjectType(id) {
-      this.$confirm("确认要删除该题目类型吗?", "信息", {
+    
+    // 根据所选的id删除相应数据
+    deleteSubjectType(row) {
+      this.$confirm("确认要删除该题型吗?", "信息", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
       })
         .then(() => {
-          this.$axios.post("/delete", id).then(resp => {
-            if (resp && resp.status === 200) {
+          deleteSubjectTypes({
+            requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: [{
+              id: row.id,
+              version: row.version
+            }]
+          }).then(resp => {
+            if (resp) {
               this.$notify({
                 title: "成功",
                 message: "数据已成功删除",
                 type: "success",
                 duration: 1000
               });
+              // 若删除成功则重新刷新页面
               this.loadSubjectTypes();
             }
           });
@@ -401,18 +415,10 @@ export default {
           });
         });
     },
-    //批量删除数据
-    deleteSubjectTypes() {
-      if (this.sels.length < 1) {
-        this.$message({
-          message: "请选择要删除的题目类型",
-          type: "warning",
-          duration: 1000
-        });
-        return 0;
-      }
-      this.$confirm(
-        "此操作将删除[" + this.sels.length + "]条数据，是否继续？",
+    // 批量删除数据
+    deleteSubjectTypes () {
+        this.$confirm(
+        "此操作将删除[" + this.sels.length + "]条数据, 是否继续?",
         "提示",
         {
           confirmButtonText: "确定",
@@ -421,22 +427,51 @@ export default {
         }
       )
         .then(() => {
-          var ids = "";
-          for (var i = 0; i < this.sels.length; i++) {
-            ids += this.sels[i].id + ",";
-          }
-          this.doDelete(ids);
+           console.log(this.sels)
+          // console.log(this.$refs.multipleTable.selection)
+          deleteSubjectTypes( {
+            requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: this.sels
+          }).then(resp => {
+            console.log(resp)
+            if (resp) {
+              var _this = this
+              this.$notify({
+                title: '成功',
+                message: '数据已成功删除',
+                type: 'success',
+                duration: 1000
+              })
+              // 若删除成功则重新刷新页面
+              this.loadSubjectTypes()
+            }
+          })
         })
-        .catch(() => {});
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除',
+            duration: 1000
+          })
+        })
     },
+
     //导出为excel文件
     exportExcel (){
         this.$axios.post("/setSubjectTypeFilename", this.filename)
         .then(resp => {
           if (resp && resp.status === 200) {
-            window.location.href = 'http://localhost:10001/api/SubjectType'
+            window.location.href = 'http://localhost:10001/api/excelSubjectType';
+            this.dialogDownload=false;
           }
         });
+        
     },
     //分页方法
     handleSizeChange(val) {
