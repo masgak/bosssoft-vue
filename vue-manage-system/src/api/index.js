@@ -38,10 +38,10 @@ export const querySubjectType=p=>post('/querySubjectType',p);
 //---------------------题目api-----------------------//
 
 export const loadSubjects=p=>get('/loadSubjects',p);
-export const addSubject=p=>post('/subject',p);
-export const deleteSubjects=p=>post('/subject',p);
-export const updateSubject=p=>post('/subject',p);
-export const querySubject=p=>post('/subject',p);
+export const addSubject=p=>post('/addSubject',p);
+export const deleteSubjects=p=>post('/deleteSubjects',p);
+export const updateSubject=p=>post('/updateSubject',p);
+export const querySubject=p=>post('/querySubject',p);
 
 //---------------------组卷配置api-----------------------//
 

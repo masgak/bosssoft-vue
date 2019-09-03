@@ -133,8 +133,8 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="难度:" prop="difficuty" :label-width="formLabelWidth">
-            <el-select v-model="subject.difficuty" placeholder>
+          <el-form-item label="难度:" prop="subjectDifficulty" :label-width="formLabelWidth">
+            <el-select v-model="subject.subjectDifficulty" placeholder>
               <el-option
                 v-for="item in difficuty"
                 :key="item.id"
@@ -159,19 +159,19 @@
 
           <el-form-item
             :label-width="formLabelWidth"
-            v-for="(domain, index) in dynamicValidateForm.domains"
+            v-for="(domain, index) in subject.subjectOptions"
             :label="'选项:'+index"
             :key="domain.key"
-            :prop="'domains.' + index + '.value'"
+            :prop="'subjectOptions.' + index + '.answer'"
             :rules="{
             required: true, message: '选项不能为空', trigger: 'blur'
           }"
           >
-            <el-input type="textarea" v-model="domain.value"></el-input>
+            <el-input type="textarea" v-model="domain.answer"></el-input>
             <el-button @click.prevent="removeDomain(domain)">删除</el-button>
-          </el-form-item>
+          </el-form-item> 
 
-          <el-form-item label="选择图片" :label-width="formLabelWidth" prop="picture">
+          <!-- <el-form-item label="选择图片" :label-width="formLabelWidth" prop="picture">
             <el-input type="text" style="width: 300px" v-model="subject.picture"></el-input>
             <el-upload
               class="upload-demo"
@@ -187,7 +187,7 @@
             >
               <el-button size="small" type="primary">选择图片</el-button>
             </el-upload>
-          </el-form-item>
+          </el-form-item> -->
 
           <el-form-item label="答案" :label-width="formLabelWidth" prop="option">
             <el-button
@@ -197,18 +197,17 @@
               @click="addAnswer"
             >添加答案</el-button>
           </el-form-item>
-
           <el-form-item
             :label-width="formLabelWidth"
-            v-for="(answer, index) in dynamicValidateForm.answers"
+            v-for="(answer, index) in subject.subjectAnswers"
             :label="'答案:'+index"
             :key="answer.key"
-            :prop="'answers.' + index + '.value'"
+            :prop="'subjectAnswers.' + index + '.answer'"
             :rules="{
             required: true, message: '答案不能为空', trigger: 'blur'
           }"
           >
-            <el-input type="textarea" v-model="answer.value"></el-input>
+            <el-input type="textarea" v-model="answer.answer"></el-input>
             <el-button @click.prevent="removeAnswer(answer)">删除</el-button>
           </el-form-item>
 
@@ -226,7 +225,7 @@
             <el-button
               size="mini"
               type="primary"
-              @click="addSubject"
+              @click="addSubjects()"
               :style="{ display: visibleSave }"
             >保 存</el-button>
             <el-button
@@ -300,20 +299,6 @@ export default {
 
   data() {
     return {
-      dynamicValidateForm: {
-        domains: [
-          {
-            value: "",
-            isright: ""
-          }
-        ],
-        answers: [
-          {
-            value: "",
-            isright: ""
-          }
-        ]
-      },
       //在表格中显示的数据
       subjects: [],
       //添加与修改弹窗显示与否
@@ -325,17 +310,28 @@ export default {
       //弹窗右对齐参数
       labelPosition: "left",
       //修改弹窗中的值
-      subject: [
+      subject: 
         {
           subjectType: "",
           category: "",
-          difficuty: "",
+          subjectDifficulty: "",
           name: "",
           picture: "",
           status: "",
-          remark: ""
-        }
-      ],
+          remark: "",
+          subjectOptions: [
+          {
+            answer: "",
+            correct: "0"
+          }
+        ],
+        subjectAnswers: [
+          {
+            answer: "",
+            correct: "1"
+          }
+        ]
+        },
       //表单中列表数据
       subjecttypes: [
         { id: 3, name: "体育题" },
@@ -358,7 +354,7 @@ export default {
           { required: true, message: "题目类别必填", trigger: "blur" }
         ],
         category: [{ required: true, message: "题型必填", trigger: "blur" }],
-        difficuty: [{ required: true, message: "难度必填", trigger: "blur" }],
+        subjectDifficulty: [{ required: true, message: "难度必填", trigger: "blur" }],
         name: [{ required: true, message: "题目必填", trigger: "blur" }],
         status: [{ required: true, message: "状态必填", trigger: "blur" }]
       },
@@ -386,26 +382,26 @@ export default {
   },
   methods: {
     removeDomain(item) {
-      var index = this.dynamicValidateForm.domains.indexOf(item);
+      var index = this.subject.subjectOptions.indexOf(item);
       if (index !== -1) {
-        this.dynamicValidateForm.domains.splice(index, 1);
+        this.subject.subjectOptions.splice(index, 1);
       }
     },
     addDomain() {
-      this.dynamicValidateForm.domains.push({
-        value: "",
+      this.subject.subjectOptions.push({
+        answer: "",
         key: Date.now()
       });
     },
     removeAnswer(item) {
-      var index = this.dynamicValidateForm.answers.indexOf(item);
+      var index = this.subject.subjectAnswers.indexOf(item);
       if (index !== -1) {
-        this.dynamicValidateForm.answers.splice(index, 1);
+        this.subject.subjectAnswers.splice(index, 1);
       }
     },
     addAnswer() {
-      this.dynamicValidateForm.answers.push({
-        value: "",
+      this.subject.subjectAnswers.push({
+        answer: "",
         key: Date.now()
       });
     },
@@ -438,9 +434,9 @@ export default {
     showAddSubject() {
       //设置弹窗表头
       this.dialogTitle = "添加题目";
-      (this.visibleEdit = "none"),
-        (this.visibleSave = ""),
-        (this.dialogSubject = true);
+      this.visibleEdit = "none",
+      this.visibleSave = "",
+      this.dialogSubject = true;
     },
     //取消弹窗
     cancelEidt() {
@@ -452,7 +448,7 @@ export default {
       this.subject = {
         subjectType: "",
         category: "",
-        difficuty: "",
+        subjectDifficulty: "",
         name: "",
         picture: "",
         status: "",
@@ -485,14 +481,49 @@ export default {
       this.subject = row;
       this.subject.subjectType = row.subjectType;
       this.subject.category = row.category;
-      this.subject.difficuty = row.difficuty;
+      this.subject.subjectDifficulty = row.subjectDifficulty;
       this.subject.name = row.name;
       this.subject.status = row.status;
       this.subject.remark = row.remark;
       //显示编辑按钮，隐藏新增按钮
-      (this.visibleEdit = ""),
-        (this.visibleSave = "none"),
-        (this.dialogSubject = true);
+      this.visibleEdit = "",
+      this.visibleSave = "none",
+      this.dialogSubject = true;
+    },
+    // 增加数据
+    addSubjects() {
+      console.log(this.subject)
+      this.$axios
+        addSubject({
+            requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: this.subject
+        })
+        .then(resp => {
+          // 成功增加数据后刷新页面
+          if (resp) {
+            this.$notify({
+              title: "成功",
+              message: "数据已成功插入",
+              type: "success",
+              duration: 1500
+            });
+            this.loadSubjects();
+            this.dialogSubject = false;
+          }
+        })
+        .catch(() => {
+          this.$message({
+            type: "error",
+            message: "数据插入失败",
+            duration: 1000
+          });
+        });
     },
     // 根据所选的id删除相应数据
     deleteSubject(id) {
