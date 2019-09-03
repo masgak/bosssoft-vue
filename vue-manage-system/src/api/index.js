@@ -11,21 +11,22 @@ export const fetchData = (query) => {
 
 /*api接口统一管理 */
 
+
 //---------------------数据字典api------------------------//
 export const loadDictionaries=p=>get('/loadDictionaries',p);
 export const queryDictionary=p=>post('/queryDictionary',p);
 export const addDictionary=p=>post('/addDictionary',p);
-export const deleteDictionaries=p=>post('/deleteDictionaries',p);
+export const deleteDictionaries=p=>post('/delete',p);
 export const updateDictionary=p=>post('/updateDictionary',p);
 
 
 //---------------------题目类别api-----------------------//
 
-export const loadCategories=p=>get('/category',p);
-export const addCategory=p=>post('/category',p);
-export const deleteCategories=p=>post('/category',p);
-export const updateCategory=p=>post('/category',p);
-export const queryCategory=p=>post('/category',p);
+export const loadCategories=p=>get('/loadCategories',p);
+export const addCategory=p=>post('/addCategory',p);
+export const deleteCategories=p=>post('/deleteCategories',p);
+export const updateCategory=p=>post('/updateCategory',p);
+export const queryCategory=p=>post('/queryCategory',p);
 
 //----------------------题型api------------------------//
 

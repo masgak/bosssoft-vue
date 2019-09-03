@@ -444,7 +444,7 @@ export default {
         type: "warning"
       })
         .then(() => {
-          this.$axios.post('/delete', {
+          deleteDictionaries({
             requestHead: {
               version: '1',
               businessType: '1',
@@ -457,7 +457,7 @@ export default {
               version: row.version
             }]
           }).then(resp => {
-            if (resp && resp.status === 200) {
+            if (resp) {
               this.$notify({
                 title: "成功",
                 message: "数据已成功删除",
@@ -491,7 +491,7 @@ export default {
         .then(() => {
            console.log(this.sels)
           // console.log(this.$refs.multipleTable.selection)
-          this.$axios.post('/delete', {
+          deleteDictionaries( {
             requestHead: {
               version: '1',
               businessType: '1',
@@ -502,15 +502,14 @@ export default {
             body: this.sels
           }).then(resp => {
             console.log(resp)
-            if (resp && resp.status === 200) {
+            if (resp) {
               var _this = this
               this.$notify({
                 title: '成功',
-                message: '数据已成功删除1234',
+                message: '数据已成功删除',
                 type: 'success',
                 duration: 1000
               })
-              _this.request = resp.data
               // 若删除成功则重新刷新页面
               this.loadDictionaries()
             }
@@ -525,10 +524,11 @@ export default {
         })
     },
     exportExcel (){
-        this.$axios.post("/setFilename", this.filename)
+        this.$axios.post("/setDictionaryFilename", this.filename)
         .then(resp => {
           if (resp && resp.status === 200) {
-            window.location.href = 'http://localhost:10001/api/execel'
+            window.location.href = 'http://localhost:10001/api/excelDictionary';
+            this.dialogDownload=false;
           }
         });
     }
