@@ -111,8 +111,13 @@
           width="50%"
           @close="cancelEidt"
         >
-          <el-form-item label="题目类别:" prop="subjectType" :label-width="formLabelWidth">
-            <el-select v-model="subject.subjectType" placeholder>
+
+          <el-form-item prop="subjectType" label="类别">
+            <el-select
+              v-model="subject.subjectType"
+              placeholder="请选择题目类别"
+              style="width:200px"
+            >
               <el-option
                 v-for="item in subjecttypes"
                 :key="item.id"
@@ -122,8 +127,8 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="题型:" prop="category" :label-width="formLabelWidth">
-            <el-select v-model="subject.category" placeholder>
+          <el-form-item prop="category" label="题型">
+            <el-select v-model="subject.category" placeholder="请选择题型" style="width:200px">
               <el-option
                 v-for="item in categories"
                 :key="item.id"
@@ -133,8 +138,8 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="难度:" prop="subjectDifficulty" :label-width="formLabelWidth">
-            <el-select v-model="subject.subjectDifficulty" placeholder>
+          <el-form-item prop="subjectDifficulty" label="难度">
+            <el-select v-model="subject.subjectDifficulty" placeholder="请选择难度" style="width:200px">
               <el-option
                 v-for="item in difficuty"
                 :key="item.id"
@@ -144,79 +149,77 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="题目" :label-width="formLabelWidth" prop="name">
+          <el-form-item prop="name" label="题目">
             <el-input type="textarea" v-model="subject.name"></el-input>
           </el-form-item>
 
-          <el-form-item label="选项" :label-width="formLabelWidth" prop="option">
-            <el-button
-              type="text"
-              class="el-icon-plus"
-              style="font-size: 15px"
-              @click="addDomain"
-            >添加选项</el-button>
-          </el-form-item>
-
-          <el-form-item
-            :label-width="formLabelWidth"
-            v-for="(domain, index) in subject.subjectOptions"
-            :label="'选项:'+index"
-            :key="domain.key"
-            :prop="'subjectOptions.' + index + '.answer'"
-            :rules="{
-            required: true, message: '选项不能为空', trigger: 'blur'
-          }"
-          >
-            <el-input type="textarea" v-model="domain.answer"></el-input>
-            <el-button @click.prevent="removeDomain(domain)">删除</el-button>
-          </el-form-item> 
-
-          <!-- <el-form-item label="选择图片" :label-width="formLabelWidth" prop="picture">
-            <el-input type="text" style="width: 300px" v-model="subject.picture"></el-input>
-            <el-upload
-              class="upload-demo"
-              action="https://jsonplaceholder.typicode.com/posts/"
-              :on-preview="handlePreview"
-              :on-remove="handleRemove"
-              :before-remove="beforeRemove"
-              accept="application/vnd.ms-excel"
-              multiple
-              :limit="1"
-              :on-exceed="handleExceed"
-              :file-list="fileList"
-            >
-              <el-button size="small" type="primary">选择图片</el-button>
-            </el-upload>
-          </el-form-item> -->
-
-          <el-form-item label="答案" :label-width="formLabelWidth" prop="option">
-            <el-button
-              type="text"
-              class="el-icon-plus"
-              style="font-size: 15px"
-              @click="addAnswer"
-            >添加答案</el-button>
-          </el-form-item>
-          <el-form-item
-            :label-width="formLabelWidth"
+          <!-- 答案区域 -->
+          <div
             v-for="(answer, index) in subject.subjectAnswers"
-            :label="'答案:'+index"
-            :key="answer.key"
-            :prop="'subjectAnswers.' + index + '.answer'"
-            :rules="{
-            required: true, message: '答案不能为空', trigger: 'blur'
-          }"
+            :key="index"
+            style="border:1px solid #F0F0F0;padding:20px;margin:20px 0 20px 0;"
           >
-            <el-input type="textarea" v-model="answer.answer"></el-input>
-            <el-button @click.prevent="removeAnswer(answer)">删除</el-button>
-          </el-form-item>
+            <el-form-item
+              :prop="'subjectAnswers.'+index+'.answer'"
+              label="选项"
+            >
+              <el-input
+                v-model="answer.answer"
+                type="textarea"
+                clearable
+                @keyup.enter.native="addlastitems(index, '1')"
+              />
+            </el-form-item>
 
-          <el-form-item label="是否启用" :label-width="formLabelWidth" prop="status">
+            <el-form-item
+              :prop="'subjectAnswers.'+index+'.correct'"
+              label="是否正确"
+            >
+              <el-row>
+                <el-col :span="5">
+                  <el-select v-model="answer.correct">
+                    <el-option
+                :label="item.name"
+                :value="item.id"
+                v-for="(item, index) in RightOrFalseList"
+                :key="index"
+              ></el-option>
+                  </el-select>
+                </el-col>
+
+                <el-col :span="6">
+                  <section v-if="index === 0">
+                    <el-button
+                      type="primary"
+                      icon="el-icon-plus"
+                      plain
+                      style="margin-left:10px;"
+                      circle
+                      @click="addlastitems(index, '1')"
+                    />
+                  </section>
+
+                  <section v-if="index > 0">
+                    <el-button
+                      type="danger"
+                      icon="el-icon-delete"
+                      plain
+                      style="margin-left:10px;"
+                      circle
+                      @click="rmlastitems(index, '1')"
+                    />
+                  </section>
+                </el-col>
+              </el-row>
+            </el-form-item>
+          </div>
+
+          <el-form-item label="是否启用"  prop="status">
             <el-radio v-model="subject.status" label="1">是</el-radio>
             <el-radio v-model="subject.status" label="0">否</el-radio>
           </el-form-item>
 
-          <el-form-item label="备注信息" :label-width="formLabelWidth" prop="remark">
+          <el-form-item label="备注信息"  prop="remark">
             <el-input type="textarea" v-model="subject.remark"></el-input>
           </el-form-item>
 
@@ -319,19 +322,24 @@ export default {
           picture: "",
           status: "",
           remark: "",
-          subjectOptions: [
+          subjectAnswers: [
           {
             answer: "",
-            correct: "0"
+            correct: ""
           }
-        ],
-        subjectAnswers: [
-          {
-            answer: "",
-            correct: "1"
-          }
-        ]
+          ]
         },
+        //是否为答案
+        RightOrFalseList: [
+        {
+          id: 1,
+          name: "正确"
+        },
+        {
+          id: 2,
+          name: "错误"
+        }
+      ],
       //表单中列表数据
       subjecttypes: [
         { id: 3, name: "体育题" },
@@ -381,29 +389,25 @@ export default {
     };
   },
   methods: {
-    removeDomain(item) {
-      var index = this.subject.subjectOptions.indexOf(item);
-      if (index !== -1) {
-        this.subject.subjectOptions.splice(index, 1);
+    addlastitems(index, type) {
+      if (type === "1") {
+        this.subject.subjectAnswers.push({
+          answer: "",
+          correct: ""
+        });
       }
+      this.$message.success("增加选项成功");
+      console.log(this.subject.subjectAnswers)
     },
-    addDomain() {
-      this.subject.subjectOptions.push({
-        answer: "",
-        key: Date.now()
-      });
-    },
-    removeAnswer(item) {
-      var index = this.subject.subjectAnswers.indexOf(item);
-      if (index !== -1) {
-        this.subject.subjectAnswers.splice(index, 1);
+    rmlastitems(index, type) {
+      switch (type) {
+        case "1":
+          this.subject.subjectAnswers.splice(index, 1);
+          break;
+        default:
+          break;
       }
-    },
-    addAnswer() {
-      this.subject.subjectAnswers.push({
-        answer: "",
-        key: Date.now()
-      });
+      this.$message.success("移除选项成功");
     },
     // 加载数据方法
     loadSubjects() {
@@ -426,9 +430,6 @@ export default {
     // 每一行多选选中时触发该方法
     handleSelectionChange(sels) {
       this.sels = sels;
-    },
-    handleNodeClick(data) {
-      console.log(data);
     },
     //显示添加数据弹窗
     showAddSubject() {
