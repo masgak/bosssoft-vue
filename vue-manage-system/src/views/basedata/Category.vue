@@ -6,7 +6,7 @@
       <span class="el-icon-notebook-1">&nbsp;题目类别</span>
       <span style="margin-left:10px">
         <el-button type="text" class="el-icon-plus" @click="showAddCategory"></el-button>
-        <el-button type="text" class="el-icon-refresh" @click="refreshTree"></el-button>
+        <el-button type="text" class="el-icon-refresh" @click="loadCategoryTree"></el-button>
       </span>
       <el-tree :data="tree" :props="defaultProps" @node-click="handleNodeClick" v-if="showTree"></el-tree>
     </div>
@@ -18,7 +18,7 @@
           <el-input type="text" placeholder="请输入题目类别" v-model="searchpath.name"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="queryCategory">查询</el-button>
+          <el-button type="primary" @click="queryCategory(searchpath)">查询</el-button>
         </el-form-item>
       </el-form>
 
@@ -115,6 +115,9 @@
             width="50%"
             @close="cancelEidt"
           >
+            <!-- <el-form-item label="父类别id：" prop="parentId">
+              <el-input v-model="category.parentId"></el-input>
+            </el-form-item> -->
             <el-form-item label="题目类别：" prop="name">
               <el-input v-model="category.name"></el-input>
             </el-form-item>
@@ -165,10 +168,10 @@
           :before-close="handleClose"
           center
         >
-          <el-input style="width: 200px;"></el-input>
+          <el-input style="width: 200px;" v-model="filename"></el-input>
           <label>.xls</label>
           <div slot="footer" class="dialog-footer">
-            <el-button size="small" round>保 存</el-button>
+            <el-button size="small" round @click="exportExcel">保 存</el-button>
             <el-button size="small" round type="primary" @click="dialogDownload = false">取 消</el-button>
           </div>
           <div slot="tip">只能导出excel文件，且需符合相应格式</div>
@@ -193,10 +196,12 @@
 </template>
 
 <script>
-import { loadCategories,queryCategory,addCategory,deleteCategories, updateCategory } from "../../api/index";
+import { loadCategories,queryCategory,addCategory,deleteCategories, updateCategory,loadCategoryTree } from "../../api/index";
 export default {
+  
   data() {
     return {
+      filename:"题目类别",
       options: [
         {
           value: "选项1",
@@ -208,63 +213,13 @@ export default {
         }
       ],
       value: "",
-      tree: [
-        {
-          label: "一级 1",
-          children: [
-            {
-              label: "二级 1-1",
-              children: [
-                {
-                  label: "三级 1-1-1"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          label: "一级 2",
-          children: [
-            {
-              label: "二级 2-1",
-              children: [
-                {
-                  label: "三级 2-1-1"
-                }
-              ]
-            },
-            {
-              label: "二级 2-2",
-              children: [
-                {
-                  label: "三级 2-2-1"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          label: "一级 3",
-          children: [
-            {
-              label: "二级 3-1",
-              children: [
-                {
-                  label: "三级 3-1-1"
-                }
-              ]
-            },
-            {
-              label: "二级 3-2",
-              children: [
-                {
-                  label: "三级 3-2-1"
-                }
-              ]
-            }
-          ]
-        }
-      ],
+      tree: [],
+      selectedTreeId:null,
+      defaultProps:{
+        children: 'childList',
+        label: 'name' // 这里的名字要和你封装的数据中的节点的名字一样
+      },
+      
       categories: [],
       //弹窗显示与否
       dialogCategory: false,
@@ -276,6 +231,7 @@ export default {
       visibleSave: "",
       //添加与修改弹窗中的数值
       category: {
+        parentId:this.selectedTreeId,
         name: "",
         status: 1,
         remark: ""
@@ -303,9 +259,24 @@ export default {
   },
   // 页面加载完成后加载数据
   mounted: function() {
+    this.loadCategoryTree();
     this.loadCategories();
   },
   methods: {
+    //点击树节点
+    handleNodeClick: function (data) {
+        this.selectedTreeId=data.id;
+        console.log(this.selectedTreeId);
+        if(data.leaf===0){
+           this.queryCategory({
+            parentId:data.id
+            })
+        }else{
+          this.queryCategory({
+            id:data.id
+         })
+       }
+    },
     //加载Category表格
     loadCategories() {
       let _this = this;
@@ -316,16 +287,36 @@ export default {
         }
       });
     },
+    //加载树
+    loadCategoryTree(){
+      let _this = this;
+      loadCategoryTree().then(resp => {
+        if (resp) {
+          console.log(resp);
+          _this.tree = resp;
+          this.selectedTreeId=null;
+        }
+      });
+    },
+
     // 每一行多选选中时触发该方法
     handleSelectionChange(sels) {
       this.sels = sels;
     },
     //搜索
-    queryCategory() {
+    queryCategory(condition) {
+      console.log(condition);
       let _this = this;
       this.$axios
-        .post("/search", {
-          name: this.searchpath.name
+        .post("/queryCategory", {
+          requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: condition
         })
         .then(resp => {
           if (resp && resp.status === 200) {
@@ -342,6 +333,7 @@ export default {
     },
     //显示增加/修改数据弹窗
     showAddCategory() {
+      this.category.parentId=this.selectedTreeId;
       this.dialogTitle = "添加题目类别";
       this.visibleEdit = "none",
       this.visibleSave = "",
@@ -349,6 +341,7 @@ export default {
     },
     //增加题目类别
     addCategory() {
+      console.log(this.category);
       addCategory({
           requestHead: {
               version: '1',
@@ -367,6 +360,7 @@ export default {
             duration: 1500
           });
           this.loadCategories();
+          this.loadCategoryTree();
           this.dialogCategory = false;
         })
         .catch(() => {
@@ -415,6 +409,7 @@ export default {
     //清除弹窗表单内容
     emptyCategory() {
       this.category = {
+        parentId:this.selectedTreeId,
         name: "",
         status: 1,
         remark: ""
@@ -485,6 +480,7 @@ export default {
               });
               // 若删除成功则重新刷新页面
               this.loadCategories();
+              this.loadCategoryTree();
             }
           });
         })
@@ -529,7 +525,8 @@ export default {
                 duration: 1000
               })
               // 若删除成功则重新刷新页面
-              this.loadCategories()
+              this.loadCategories();
+              this.loadCategoryTree();
             }
           })
         })
@@ -542,6 +539,18 @@ export default {
         })
     },
 
+  //导出为excel文件
+    exportExcel (){
+        this.$axios.post("/setCategoryFilename", this.filename)
+        .then(resp => {
+          if (resp && resp.status === 200) {
+            window.location.href = 'http://localhost:10001/api/excelCategory';
+            this.dialogDownload=false;
+          }
+        });
+        
+    },
+
     //分页方法
     handleSizeChange(val) {
       this.pageSize = val;
@@ -549,11 +558,11 @@ export default {
     handleCurrentChange(val) {
       this.currentPage = val;
     },
-    //刷新树
-    refreshTree() {
-      this.showTree = false;
-      this.$nextTick(() => (this.showTree = true));
-    }
+    // //刷新树
+    // refreshTree() {
+    //   this.showTree = false;
+    //   this.$nextTick(() => (this.showTree = true));
+    // }
   }
 };
 </script>

@@ -27,6 +27,7 @@ export const addCategory=p=>post('/addCategory',p);
 export const deleteCategories=p=>post('/deleteCategories',p);
 export const updateCategory=p=>post('/updateCategory',p);
 export const queryCategory=p=>post('/queryCategory',p);
+export const loadCategoryTree=p=>get('/loadCategoryTree',p);
 
 //----------------------题型api------------------------//
 

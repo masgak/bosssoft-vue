@@ -7,7 +7,7 @@
         <el-input type="text" placeholder="请输入题目类型" v-model="searchpath.name"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary">查询</el-button>
+        <el-button type="primary" @click="querySubjectType">查询</el-button>
       </el-form-item>
     </el-form>
 
@@ -242,8 +242,15 @@ export default {
     querySubjectType() {
       var _this = this;
       this.$axios
-        .post("/search", {
-          name: this.searchpath.name
+        .post("/querySubjectType", {
+          requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: this.searchpath
         })
         .then(resp => {
           if (resp && resp.status === 200) {
