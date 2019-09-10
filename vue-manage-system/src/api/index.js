@@ -47,11 +47,14 @@ export const querySubject=p=>post('/querySubject',p);
 
 //---------------------组卷配置api-----------------------//
 
-export const loadCombExams=p=>get('/combExam',p);
-export const addCombExam=p=>post('/combExam',p);
-export const deleteCombExams=p=>post('/combExam',p);
-export const updateCombExam=p=>post('/combExam',p);
-export const queryCombExam=p=>post('/combExam',p);
+export const loadCombExams=p=>get('/loadCombExams',p);
+export const addCombExam=p=>post('/addCombExam',p);
+export const deleteCombExams=p=>post('/deleteCombExams',p);
+export const updateCombExam=p=>post('/updateCombExam',p);
+export const queryCombExam=p=>post('/queryCombExam',p);
+export const addCombExamItem=p=>post('/addCombExamItem',p);
+export const updateCombExamItem=p=>post('/updateCombExamItem',p);
+export const deleteCombExamItem=p=>post('/deleteCombExamItem',p);
 
 
 

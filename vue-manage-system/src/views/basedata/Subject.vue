@@ -3,24 +3,31 @@
   <div>
     <!--查询部分 -->
     <el-form :inline="true" :model="searchpath" class="demo-form-inline" style="float:left">
-      <el-form-item label="题目分类">
-        <el-select v-model="searchpath.subjectType" clearable placeholder="请选择">
+      <el-form-item label="题目类别">
+        <el-select v-model="searchpath.subjectTypeId" placeholder="请选择" style="width:200px">
           <el-option
-            v-for="item in subjecttypes"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+              v-for="item in subjecttypes"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
           ></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="选择题型">
-        <el-input type="text" v-model="searchpath.category" placeholder></el-input>
+      <el-form-item label="题目类型">
+            <el-select v-model="searchpath.categoryId" placeholder="请选择题型" style="width:200px">
+              <el-option
+                v-for="item in categories"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              ></el-option>
+            </el-select>
       </el-form-item>
       <el-form-item label="输入题目">
         <el-input type="text" v-model="searchpath.name" placeholder></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="querySubject">查询</el-button>
+        <el-button type="primary" @click="querySubject()">查询</el-button>
       </el-form-item>
     </el-form>
     <edit-form @onSubmit="loadSubjects()" ref="edit"></edit-form>
@@ -74,7 +81,7 @@
         cell-style="padding:0"
         :row-class-name="tableRowClassName"
         @selection-change="handleSelectionChange"
-        :default-sort="{prop: 'subjectType', order: 'Ascending'}"
+        :default-sort="{prop: 'subjectTypeId', order: 'Ascending'}"
       >
         <el-table-column type="selection" width="55"></el-table-column>
         <el-table-column prop="name" label="题目" sortable width="300"></el-table-column>
@@ -112,9 +119,9 @@
           @close="cancelEidt"
         >
 
-          <el-form-item prop="subjectType" label="类别">
+          <el-form-item prop="subjectTypeId" label="类别">
             <el-select
-              v-model="subject.subjectType"
+              v-model="subject.subjectTypeId"
               placeholder="请选择题目类别"
               style="width:200px"
             >
@@ -127,8 +134,8 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item prop="category" label="题型">
-            <el-select v-model="subject.category" placeholder="请选择题型" style="width:200px">
+          <el-form-item prop="categoryId" label="题型">
+            <el-select v-model="subject.categoryId" placeholder="请选择题型" style="width:200px">
               <el-option
                 v-for="item in categories"
                 :key="item.id"
@@ -138,8 +145,8 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item prop="subjectDifficulty" label="难度">
-            <el-select v-model="subject.subjectDifficulty" placeholder="请选择难度" style="width:200px">
+          <el-form-item prop="difficulty" label="难度">
+            <el-select v-model="subject.difficulty" placeholder="请选择难度" style="width:200px">
               <el-option
                 v-for="item in difficuty"
                 :key="item.id"
@@ -189,11 +196,7 @@
 
                 <el-col :span="6">
                   <section v-if="index === 0">
-                    <el-button
-                      type="primary"
-                      icon="el-icon-plus"
-                      plain
-                      style="margin-left:10px;"
+                    <el-button type="primary"   icon="el-icon-plus" plain style="margin-left:10px;"
                       circle
                       @click="addlastitems(index, '1')"
                     />
@@ -234,7 +237,7 @@
             <el-button
               size="mini"
               type="primary"
-              @click="updateSubject"
+              @click="updateSubject()"
               :style="{ display: visibleEdit }"
             >更 新</el-button>
           </span>
@@ -294,8 +297,10 @@ import {
   loadSubjects,
   querySubject,
   addSubject,
+  updateSubject,
   deleteSubjects
 } from "../../api/index";
+import { log } from 'util';
 
 export default {
   name: "SubjectsType",
@@ -312,12 +317,19 @@ export default {
       dialogDownload: false,
       //弹窗右对齐参数
       labelPosition: "left",
+      // 搜索框数据
+      searchpath: 
+      {
+        subjectTypeId: "",
+        categoryId: "",
+        name: ""
+      },
       //修改弹窗中的值
       subject: 
         {
-          subjectType: "",
-          category: "",
-          subjectDifficulty: "",
+          subjectTypeId: "",
+          categoryId: "",
+          difficulty: "",
           name: "",
           picture: "",
           status: "",
@@ -358,11 +370,11 @@ export default {
       ],
       //前端校验 @blur 当元素失去焦点时触发blur事件
       rules: {
-        subjectType: [
+        subjectTypeId: [
           { required: true, message: "题目类别必填", trigger: "blur" }
         ],
-        category: [{ required: true, message: "题型必填", trigger: "blur" }],
-        subjectDifficulty: [{ required: true, message: "难度必填", trigger: "blur" }],
+        categoryId: [{ required: true, message: "题型必填", trigger: "blur" }],
+        difficulty: [{ required: true, message: "难度必填", trigger: "blur" }],
         name: [{ required: true, message: "题目必填", trigger: "blur" }],
         status: [{ required: true, message: "状态必填", trigger: "blur" }]
       },
@@ -379,12 +391,6 @@ export default {
       visibleSave: "",
       // 多选选中值的坐标，用于批量删除
       sels: [],
-      // 搜索框数据
-      searchpath: {
-        subjectType: "",
-        category: "",
-        name: ""
-      },
       formLabelWidth: "120px"
     };
   },
@@ -447,9 +453,9 @@ export default {
     //清除弹窗内容
     emptySubject() {
       this.subject = {
-        subjectType: "",
-        category: "",
-        subjectDifficulty: "",
+        subjectTypeId: "",
+        categoryId: "",
+        difficulty: "",
         name: "",
         picture: "",
         status: "",
@@ -480,9 +486,9 @@ export default {
     showEditSubject(row) {
       this.dialogTitle = "编辑题目";
       this.subject = row;
-      this.subject.subjectType = row.subjectType;
-      this.subject.category = row.category;
-      this.subject.subjectDifficulty = row.subjectDifficulty;
+      this.subject.subjectTypeId = row.subjectTypeId;
+      this.subject.categoryId = row.categoryId;
+      this.subject.difficulty = row.difficulty;
       this.subject.name = row.name;
       this.subject.status = row.status;
       this.subject.remark = row.remark;
@@ -526,6 +532,69 @@ export default {
           });
         });
     },
+    // 编辑数据
+    updateSubject() {
+      console.log(this.subject)
+      this.$axios
+        updateSubject({
+            requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: this.subject
+        })
+        .then(resp => {
+          // 成功增加数据后刷新页面
+          if (resp) {
+            this.$notify({
+              title: "成功",
+              message: "数据已成功修改",
+              type: "success",
+              duration: 1500
+            });
+            this.loadSubjects();
+            this.dialogSubject = false;
+          }
+        })
+        .catch(() => {
+          this.$message({
+            type: "error",
+            message: "数据修改失败",
+            duration: 1000
+          });
+        });
+    },
+    // 搜索功能
+    querySubject() {
+      console.log(this.searchpath)
+      var _this = this;
+      querySubject({
+        requestHead: {
+          version: '1',
+          businessType: '1',
+          deviceId: '1',
+          deviceType: '1',
+          encryption: '1'
+        },
+        body: this.searchpath
+      })
+        .then(resp => {
+          if (resp) {
+            this.$notify({
+              title: "成功",
+              message: "查询结果如下",
+              type: "success",
+              duration: 1000
+            });
+            console.log(resp)
+            // 若搜索成功则重新刷新页面
+            _this.subjects = resp.data;
+          }
+        });
+    },
     // 根据所选的id删除相应数据
     deleteSubject(id) {
       this.$confirm("确认要删除该题目信息吗?", "信息", {
@@ -556,17 +625,9 @@ export default {
           });
         });
     },
-    //批量删除数据
-    deleteSubjects() {
-      if (this.sels.length < 1) {
-        this.$message({
-          message: "请选择要删除的题目",
-          type: "warning",
-          duration: 1000
-        });
-        return 0;
-      }
-      this.$confirm(
+    // 批量删除数据
+    deleteSubjects () {
+        this.$confirm(
         "此操作将删除[" + this.sels.length + "]条数据, 是否继续?",
         "提示",
         {
@@ -576,13 +637,39 @@ export default {
         }
       )
         .then(() => {
-          var ids = "";
-          for (var i = 0; i < this.sels.length; i++) {
-            ids += this.sels[i].id + ",";
-          }
-          this.doDelete(ids);
+           console.log(this.sels)
+          // console.log(this.$refs.multipleTable.selection)
+          deleteSubjects( {
+            requestHead: {
+              version: '1',
+              businessType: '1',
+              deviceId: '1',
+              deviceType: '1',
+              encryption: '1'
+            },
+            body: this.sels
+          }).then(resp => {
+            console.log(resp)
+            if (resp) {
+              var _this = this
+              this.$notify({
+                title: '成功',
+                message: '数据已成功删除',
+                type: 'success',
+                duration: 1000
+              })
+              // 若删除成功则重新刷新页面
+              this.loadSubjects()
+            }
+          })
         })
-        .catch(() => {});
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除',
+            duration: 1000
+          })
+        })
     },
     //分页方法
     handleSizeChange(val) {
