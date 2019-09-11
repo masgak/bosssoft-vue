@@ -18,27 +18,12 @@
 
     <!-- 操作区 -->
     <div style="float:left">
-      <el-button
-        type="text"
-        class="el-icon-plus"
-        style="font-size: 15px"
-        @click="showAddCombExam"
-      >增加</el-button>
+      <el-button type="text" class="el-icon-plus" style="font-size: 15px" @click="showAddCombExam">增加</el-button>
       <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
-      <el-button
-        type="text"
-        class="el-icon-delete"
-        style="font-size: 15px"
-        @click="deleteCombExams"
-      >删除</el-button>
+      <el-button type="text" class="el-icon-delete" style="font-size: 15px" @click="deleteCombExams">删除</el-button>
       <el-button type="text" class="el-icon-edit" style="font-size: 15px" @click="loadCombExams">刷新</el-button>
       <label>&nbsp;&nbsp;&nbsp;&nbsp;</label>
-      <el-button
-        type="text"
-        class="el-icon-edit"
-        style="font-size: 15px"
-        @click="checkAndshowEditCombExam"
-      >修改</el-button>
+      <el-button type="text" class="el-icon-edit" style="font-size: 15px" @click="checkAndshowEditCombExam">修改</el-button>
     </div>
 
     <!-- 页面表格 -->
@@ -159,7 +144,7 @@
       </el-form>
     </div>
 
-    <!-- 添加与修改组卷配置详情弹窗 -->
+    <!-- 添加与修改组卷配置子项弹窗 -->
     <div>
       <el-form
         :model="combExamItem"
@@ -224,13 +209,13 @@
           </el-form-item>
 
           <span slot="footer" class="dialog-footer">
-            <el-button size="mini" @click="cancelEditItem">取 消</el-button>
+            <el-button size="mini" @click="cancelEditItem()">取 消</el-button>
             <el-button
               size="mini"
               type="primary"
               @click="addCombExamItem()"
               :style="{ display: visibleItemSave }"
-            >保 存</el-button>
+            >详 情 保 存</el-button>
             <el-button
               size="mini"
               type="primary"
@@ -428,18 +413,17 @@ export default {
     },
     //取消弹窗
     cancelEdit() {
+      // this.emptyCombExam();
       this.dialogCombExam = false;
-      this.emptyCombExam();
     },
     //取消配置详细弹窗
     cancelEditItem() {
       this.dialogCombExamItem = false;
-      this.emptyCombExamItem();
     },
-    emptyCombExamItem() {
-      this.combExamItem = {
-      };
-    },
+    // emptyCombExamItem() {
+    //   this.combExamItem = {
+    //   };
+    // },
     //清除弹窗内容
     emptyCombExam() {
       this.combExam = {
@@ -580,39 +564,52 @@ export default {
           })
         })
     },
+    addCombExam(){
+      console.log(this.combExamItem);
+      this.combExams.combExamItemDTOS.push(
+      this.combExamItem
+      )
+      this.dialogCombExamItem =false;
+    },
     addCombExamItem() {
       console.log(this.combExamItem);
-      this.$axios;
-      addCombExamItem({
-        requestHead: {
-          version: "1",
-          businessType: "1",
-          deviceId: "1",
-          deviceType: "1",
-          encryption: "1"
-        },
-        body: this.combExamItem
-      })
-        .then(resp => {
-          // 成功增加数据后刷新页面
-          if (resp) {
-            this.$notify({
-              title: "成功",
-              message: "数据已成功插入",
-              type: "success",
-              duration: 1500
-            });
-            this.loadCombExams();
-            this.dialogCombExamItem = false;
-          }
-        })
-        .catch(() => {
-          this.$message({
-            type: "error",
-            message: "数据插入失败",
-            duration: 1000
-          });
-        });
+      this.combExam.combExamItemDTOS.push(this.combExamItem)
+      // this.combExams.combExamItemDTOS.push(
+      // this.combExamItem
+      // )
+      // this.dialogCombExamItem =false;
+
+      // this.$axios;
+      // addCombExamItem({
+      //   requestHead: {
+      //     version: "1",
+      //     businessType: "1",
+      //     deviceId: "1",
+      //     deviceType: "1",
+      //     encryption: "1"
+      //   },
+      //   body: this.combExamItem
+      // })
+      //   .then(resp => {
+      //     // 成功增加数据后刷新页面
+      //     if (resp) {
+      //       this.$notify({
+      //         title: "成功",
+      //         message: "数据已成功插入",
+      //         type: "success",
+      //         duration: 1500
+      //       });
+      //       this.loadCombExams();
+      //       this.dialogCombExamItem = false;
+      //     }
+      //   })
+      //   .catch(() => {
+      //     this.$message({
+      //       type: "error",
+      //       message: "数据插入失败",
+      //       duration: 1000
+      //     });
+      //   });
     },
     updateCombExam(){
       console.log(this.combExam);

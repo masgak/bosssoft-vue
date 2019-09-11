@@ -194,7 +194,7 @@
   </div>
 </template>
 <script>
-import { loadDictionaries,addDictionary,updateDictionary,deleteDictionaries,queryDictionary } from '../../api';
+import { loadDictionaries,addDictionary,updateDictionary,deleteDictionaries,queryDictionary } from "../../api/index";
 export default {
   data() {
     return {

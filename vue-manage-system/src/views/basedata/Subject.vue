@@ -459,7 +459,13 @@ export default {
         name: "",
         picture: "",
         status: "",
-        remark: ""
+        remark: "",
+        subjectAnswers: [
+        {
+            answer: "",
+            correct: ""
+        }
+        ]
       };
     },
     //显示修改数据弹窗
